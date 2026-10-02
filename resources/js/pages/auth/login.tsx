@@ -10,6 +10,13 @@ import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { store } from '@/routes/login';
 import { request } from '@/routes/password';
+/* @chisel-passkeys */
+import {
+    index as loginOptions,
+    store as loginStore,
+} from '@/actions/Laravel/Passkeys/Http/Controllers/PasskeyLoginController';
+import PasskeyVerify from '@/components/passkey-verify';
+/* @end-chisel-passkeys */
 
 type Props = {
     status?: string;
@@ -20,6 +27,15 @@ export default function Login({ status, canResetPassword }: Props) {
     return (
         <>
             <Head title="Log in" />
+
+            {/* @chisel-passkeys */}
+            <PasskeyVerify
+                routes={{
+                    options: loginOptions(),
+                    submit: loginStore(),
+                }}
+            />
+            {/* @end-chisel-passkeys */}
 
             <Form
                 {...store.form()}
