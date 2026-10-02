@@ -20,6 +20,20 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v4
 
+      # The Wayfinder Vite plugin runs `php artisan wayfinder:generate` during the
+      # build, so CI needs PHP + vendor + a bootable .env to compile the assets.
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+
+      - name: Install PHP dependencies
+        run: |
+          cp .env.example .env
+          composer install --no-dev --optimize-autoloader --no-interaction
+          php artisan key:generate
+
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
