@@ -1,0 +1,939 @@
+<title>Shuja ERP Architecture</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+
+<style>
+:root{
+  --bg:#F3F6F8; --surface:#FFFFFF; --surface-2:#F8FAFB;
+  --border:#DCE3E8; --border-strong:#C3CED6;
+  --ink:#101A20; --muted:#57666F; --faint:#8A98A0;
+  --accent:#0E7C6B; --accent-strong:#0A5F52; --accent-soft:#E2F0ED; --accent-ink:#FFFFFF;
+  --good:#2E7D5B; --warn:#A66A08; --crit:#B23A28;
+  --good-soft:#E4F1EA; --warn-soft:#F6ECD9; --crit-soft:#F7E5E1;
+  --panel:#EEF2F6; --panel-border:#D3DCE3;   /* diagram paper — fixed across themes */
+  --shadow:0 1px 2px rgba(16,26,32,.04),0 6px 20px rgba(16,26,32,.06);
+  --sans:"IBM Plex Sans",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  --disp:"Archivo",var(--sans);
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+:root:not([data-theme="light"]) { }
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1519; --surface:#141D22; --surface-2:#18242B;
+    --border:#26333B; --border-strong:#37474F;
+    --ink:#E7EEF1; --muted:#9DAAB2; --faint:#6E7C84;
+    --accent:#31B6A0; --accent-strong:#48CBB4; --accent-soft:#123029; --accent-ink:#06201B;
+    --good:#4FB783; --warn:#D99A3A; --crit:#E58067;
+    --good-soft:#12281E; --warn-soft:#2C2312; --crit-soft:#2E1913;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 26px rgba(0,0,0,.34);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1519; --surface:#141D22; --surface-2:#18242B;
+  --border:#26333B; --border-strong:#37474F;
+  --ink:#E7EEF1; --muted:#9DAAB2; --faint:#6E7C84;
+  --accent:#31B6A0; --accent-strong:#48CBB4; --accent-soft:#123029; --accent-ink:#06201B;
+  --good:#4FB783; --warn:#D99A3A; --crit:#E58067;
+  --good-soft:#12281E; --warn-soft:#2C2312; --crit-soft:#2E1913;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 26px rgba(0,0,0,.34);
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:var(--sans); font-size:16.5px; line-height:1.66;
+  -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+}
+.wrap{max-width:1140px; margin:0 auto; padding:0 clamp(18px,4vw,40px)}
+
+/* ---- top bar ---- */
+.topbar{
+  position:sticky; top:0; z-index:30; background:color-mix(in srgb,var(--bg) 86%,transparent);
+  backdrop-filter:blur(8px); border-bottom:1px solid var(--border);
+}
+.topbar .row{display:flex; align-items:center; gap:14px; height:56px}
+.brand{font-family:var(--disp); font-weight:800; letter-spacing:-.01em; font-size:15px; display:flex; align-items:center; gap:9px}
+.brand .dot{width:11px;height:11px;border-radius:3px;background:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.brand small{color:var(--muted); font-weight:600; font-family:var(--sans)}
+.spacer{flex:1}
+.tog{font-family:var(--mono); font-size:12px; color:var(--muted); background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:6px 11px; cursor:pointer}
+.tog:hover{color:var(--ink); border-color:var(--border-strong)}
+.tog:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+
+/* ---- hero ---- */
+.hero{padding:56px 0 30px; border-bottom:1px solid var(--border)}
+.eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent-strong); font-weight:600}
+.hero h1{font-family:var(--disp); font-weight:800; letter-spacing:-.02em; line-height:1.04; font-size:clamp(2.1rem,5.4vw,3.5rem); margin:.36em 0 .2em; text-wrap:balance}
+.hero p.lede{font-size:1.14rem; color:var(--muted); max-width:64ch; margin:0}
+.statusline{display:flex; flex-wrap:wrap; gap:10px; margin-top:26px}
+.pill{font-family:var(--mono); font-size:12.5px; padding:6px 12px; border-radius:999px; border:1px solid var(--border); background:var(--surface); color:var(--ink); display:inline-flex; gap:7px; align-items:center}
+.pill b{color:var(--accent-strong); font-weight:600}
+.pill.decided{border-color:color-mix(in srgb,var(--accent) 40%,var(--border)); background:var(--accent-soft)}
+
+/* ---- section scaffolding ---- */
+section{padding:52px 0; border-bottom:1px solid var(--border)}
+.snum{font-family:var(--mono); color:var(--accent-strong); font-size:13px; font-weight:600}
+h2{font-family:var(--disp); font-weight:700; letter-spacing:-.015em; font-size:clamp(1.5rem,3.2vw,2rem); margin:.15em 0 .5em; text-wrap:balance}
+h3{font-family:var(--disp); font-weight:600; letter-spacing:-.01em; font-size:1.16rem; margin:2em 0 .5em}
+h4{font-family:var(--sans); font-weight:700; font-size:1rem; margin:1.6em 0 .4em; color:var(--ink)}
+.prose>p,.prose>ul,.prose>ol,.prose>h3,.prose>h4,.prose>.note{max-width:72ch}
+p{margin:.7em 0}
+a{color:var(--accent-strong); text-underline-offset:3px; text-decoration-thickness:1px}
+strong{font-weight:600}
+code{font-family:var(--mono); font-size:.88em; background:var(--surface-2); border:1px solid var(--border); border-radius:5px; padding:.08em .38em; color:var(--ink)}
+ul,ol{padding-left:1.2em; margin:.7em 0}
+li{margin:.34em 0}
+li::marker{color:var(--faint)}
+ul.tight li{margin:.2em 0}
+
+/* ---- toc ---- */
+.toc{display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:2px 26px; margin-top:8px; list-style:none; padding:0}
+.toc li{margin:0; border-top:1px solid var(--border)}
+.toc a{display:flex; gap:12px; padding:11px 4px; text-decoration:none; color:var(--ink); align-items:baseline}
+.toc a:hover{color:var(--accent-strong)}
+.toc .n{font-family:var(--mono); color:var(--faint); font-size:12px; min-width:22px}
+
+/* ---- cards / callouts ---- */
+.note{border-left:3px solid var(--accent); background:var(--surface-2); border-radius:0 10px 10px 0; padding:14px 18px; margin:1.2em 0}
+.note.warn{border-color:var(--warn); background:var(--warn-soft)}
+.note.crit{border-color:var(--crit); background:var(--crit-soft)}
+.note .lbl{font-family:var(--mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); font-weight:600; display:block; margin-bottom:3px}
+.note p:first-of-type{margin-top:0}.note p:last-child{margin-bottom:0}
+
+.grid2{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px; margin:1.2em 0}
+.card{background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:18px 20px; box-shadow:var(--shadow)}
+.card h4{margin-top:0}
+.card .k{font-family:var(--mono); font-size:11.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--accent-strong); font-weight:600}
+
+/* ---- tables ---- */
+.tablewrap{overflow-x:auto; margin:1.3em 0; border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow)}
+table{border-collapse:collapse; width:100%; font-size:14.5px; background:var(--surface)}
+th,td{text-align:left; padding:11px 15px; border-bottom:1px solid var(--border); vertical-align:top}
+thead th{background:var(--surface-2); font-family:var(--mono); font-size:11.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); font-weight:600; white-space:nowrap}
+tbody tr:last-child td{border-bottom:none}
+td b{font-weight:600}
+td .mono,.mono{font-family:var(--mono)}
+.tag{display:inline-block; font-family:var(--mono); font-size:11px; padding:2px 8px; border-radius:6px; background:var(--accent-soft); color:var(--accent-strong); font-weight:600; white-space:nowrap}
+.tag.g{background:var(--good-soft); color:var(--good)}
+.tag.w{background:var(--warn-soft); color:var(--warn)}
+.tag.c{background:var(--crit-soft); color:var(--crit)}
+.num{font-variant-numeric:tabular-nums; text-align:right; font-family:var(--mono)}
+
+/* ---- figures ---- */
+figure{margin:1.6em 0}
+.figpanel{background:var(--panel); border:1px solid var(--panel-border); border-radius:14px; padding:20px; overflow-x:auto}
+.figpanel svg{max-width:100%; height:auto; display:block; margin:0 auto; color:#0E1E24}
+.figpanel pre.mermaid{background:transparent; margin:0; display:flex; justify-content:center; min-width:min-content}
+figcaption{font-size:13.5px; color:var(--muted); margin-top:10px; max-width:78ch}
+figcaption b{color:var(--ink)}
+
+/* phased build list */
+.phase{display:grid; grid-template-columns:auto 1fr; gap:18px; padding:16px 0; border-top:1px solid var(--border)}
+.phase:last-child{border-bottom:1px solid var(--border)}
+.phase .badge{font-family:var(--disp); font-weight:800; font-size:13px; color:var(--accent-ink); background:var(--accent); width:44px; height:44px; border-radius:11px; display:flex; align-items:center; justify-content:center}
+.phase .badge.done{background:var(--muted)}
+.phase h4{margin:2px 0 4px}
+.phase p{margin:0; color:var(--muted); font-size:14.5px}
+.phase .dep{font-family:var(--mono); font-size:12px; color:var(--faint); margin-top:5px}
+
+footer{padding:40px 0 70px; color:var(--muted); font-size:14px}
+::selection{background:var(--accent-soft); color:var(--accent-strong)}
+:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:3px}
+</style>
+
+<div class="topbar"><div class="wrap"><div class="row">
+  <span class="brand"><span class="dot"></span>Shuja&nbsp;ERP <small>· architecture proposal</small></span>
+  <span class="spacer"></span>
+  <button class="tog" id="tog" aria-label="Toggle color theme">◐ theme</button>
+</div></div></div>
+
+<header class="hero"><div class="wrap prose">
+  <span class="eyebrow">Architecture &amp; Data Model — for review</span>
+  <h1>A manufacturing ERP, built on an accounting spine.</h1>
+  <p class="lede">The design below turns your eight modules into one system where every stock move, invoice, production receipt, and payroll run posts a balanced entry into a single double-entry ledger — including the multi-stage inter-warehouse consignment that carries its own profit &amp; loss down the road.</p>
+  <div class="statusline">
+    <span class="pill decided">Backend <b>Laravel 13 · PHP 8.4</b></span>
+    <span class="pill decided">DB <b>PostgreSQL</b></span>
+    <span class="pill decided">Frontend <b>Inertia · React · shadcn/ui</b></span>
+    <span class="pill decided">Tax <b>configurable engine</b></span>
+    <span class="pill decided">Tenancy <b>shared DB · company_id</b></span>
+  </div>
+</div></header>
+
+<main class="wrap prose">
+
+<!-- ======================= TOC ======================= -->
+<section id="toc" style="border-bottom:none;padding-bottom:20px">
+  <span class="snum">CONTENTS</span>
+  <ol class="toc">
+    <li><a href="#stack"><span class="n">01</span><span>Stack &amp; justification</span></a></li>
+    <li><a href="#system"><span class="n">02</span><span>System architecture</span></a></li>
+    <li><a href="#modules"><span class="n">03</span><span>Module map</span></a></li>
+    <li><a href="#foundation"><span class="n">04</span><span>Foundation &amp; tenancy</span></a></li>
+    <li><a href="#accounting"><span class="n">05</span><span>Accounting engine (spine)</span></a></li>
+    <li><a href="#posting"><span class="n">06</span><span>The universal posting rule</span></a></li>
+    <li><a href="#inventory"><span class="n">07</span><span>Inventory &amp; valuation</span></a></li>
+    <li><a href="#manufacturing"><span class="n">08</span><span>Manufacturing</span></a></li>
+    <li><a href="#trade"><span class="n">09</span><span>Purchase &amp; sales</span></a></li>
+    <li><a href="#consignment"><span class="n">10</span><span>Inter-warehouse consignment</span></a></li>
+    <li><a href="#hr"><span class="n">11</span><span>HR &amp; payroll</span></a></li>
+    <li><a href="#sequence"><span class="n">12</span><span>Build sequence</span></a></li>
+    <li><a href="#assumptions"><span class="n">13</span><span>Assumptions &amp; questions</span></a></li>
+  </ol>
+</section>
+
+<!-- ======================= 01 STACK ======================= -->
+<section id="stack">
+  <span class="snum">01</span>
+  <h2>Stack &amp; justification</h2>
+  <p>Every choice below leans on two things you already told me and one thing your machine told me: you want <em>maintainable and performant</em>, the accounting must be <em>strictly consistent</em>, and your box is a fully-loaded <strong>Laragon</strong> install (PHP 8.4, Composer, Redis, Node 22, Yarn). That makes a Laravel monolith the path of least resistance <em>and</em> the most robust choice — one deployable unit, one transaction boundary around the ledger, no network hop between a module and the posting engine.</p>
+
+  <div class="tablewrap"><table>
+    <thead><tr><th>Layer</th><th>Choice</th><th>Why this, for this system</th></tr></thead>
+    <tbody>
+      <tr><td><b>Language / runtime</b></td><td>PHP 8.4</td><td>Typed properties, enums, readonly DTOs. Already installed; huge, stable ERP ecosystem.</td></tr>
+      <tr><td><b>Framework</b></td><td>Laravel 13</td><td>Migrations, Eloquent, queues, policies, events — the exact primitives an ERP needs. Database transactions wrap posting so the ledger is atomic. (Installer pulled the current major; newer than the 12 originally proposed.)</td></tr>
+      <tr><td><b>Database</b></td><td>PostgreSQL 16</td><td><b>Your pick, and the right one.</b> Exact <code>NUMERIC(19,4)</code> money math, <code>CHECK</code>/exclusion constraints, partial &amp; expression indexes, deferrable constraints, window functions for running stock &amp; ledger balances.</td></tr>
+      <tr><td><b>Frontend</b></td><td>React 19 + Inertia 2</td><td>SPA feel with <b>no separate API to maintain</b> — controllers return typed props straight to pages. Optimistic updates, partial reloads, prefetch for a snappy grid-heavy UI.</td></tr>
+      <tr><td><b>Components</b></td><td>shadcn/ui + Tailwind + Radix</td><td>Accessible, keyboard-friendly primitives you own in-repo. Design tokens + dark/light out of the box — the "world-class UI" bar.</td></tr>
+      <tr><td><b>Big data grids</b></td><td>TanStack Table + Virtual</td><td>Column virtualization + server pagination for ledgers and stock lists with 100k+ rows without jank.</td></tr>
+      <tr><td><b>Auth</b></td><td>Laravel Fortify + sessions</td><td>Server sessions (Redis-backed), 2FA-ready. Authorization via Policies + a granular RBAC layer (§04).</td></tr>
+      <tr><td><b>Cache / queue</b></td><td>Redis + Laravel Horizon</td><td>Async PDF/Excel export, report warm-ups, notifications, payroll runs — off the request path. Already installed.</td></tr>
+      <tr><td><b>Money</b></td><td><code>brick/money</code> + integer minor units</td><td>No floats anywhere near money; currency-aware rounding; multi-currency safe.</td></tr>
+      <tr><td><b>Reports / export</b></td><td>Laravel Excel · DomPDF/Browsershot</td><td>Excel &amp; PDF for every statement and document.</td></tr>
+      <tr><td><b>Testing</b></td><td>Pest + factories + Postgres</td><td>Feature tests assert the ledger balances after every posting; the seed data is the test fixture.</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="note"><span class="lbl">One deliberate trade-off</span><p>A monolith over microservices. For an ERP, the accounting invariant — <em>every business event lands as a balanced journal, atomically</em> — is far easier to guarantee inside one database transaction than across services. We keep clean module boundaries in code (a <code>Domain\</code> layer per module) so it stays maintainable, without paying the distributed-systems tax on consistency.</p></div>
+</section>
+
+<!-- ======================= 02 SYSTEM ======================= -->
+<section id="system">
+  <span class="snum">02</span>
+  <h2>System architecture</h2>
+  <p>Requests flow through a thin HTTP layer into module <strong>domain services</strong>, which never touch the ledger directly — they hand a business event to the <strong>Posting Engine</strong>, the single component allowed to write journals. Reads for heavy screens come off cached, pre-aggregated balances; writes go through Postgres transactions.</p>
+
+  <figure class="bleed">
+    <div class="figpanel">
+      <svg viewBox="0 0 780 560" role="img" aria-label="Layered architecture: React/Inertia browser client over HTTPS to a Laravel application containing HTTP controllers, RBAC policies, module domain services, and a central posting engine; the application reads and writes PostgreSQL and uses Redis for cache, queue and sessions; Horizon queue workers handle async jobs.">
+        <defs>
+          <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0 0 L10 5 L0 10 z" fill="currentColor"/>
+          </marker>
+        </defs>
+        <g font-family="IBM Plex Mono, monospace" fill="#0E1E24" stroke="none">
+          <!-- Client -->
+          <rect x="150" y="16" width="480" height="66" rx="12" fill="#ffffff" stroke="#0E1E24" stroke-width="1.5"/>
+          <text x="390" y="42" text-anchor="middle" font-size="15" font-weight="600">Browser — React 19 + shadcn/ui</text>
+          <text x="390" y="63" text-anchor="middle" font-size="12" fill="#4a5a62">Inertia pages · TanStack virtualized grids · optimistic updates</text>
+
+          <line x1="390" y1="82" x2="390" y2="112" stroke="#0E1E24" stroke-width="1.5" marker-end="url(#ah)"/>
+          <text x="402" y="101" font-size="11" fill="#4a5a62">Inertia / HTTPS</text>
+
+          <!-- Web server -->
+          <rect x="230" y="114" width="320" height="40" rx="9" fill="#e7edf1" stroke="#0E1E24" stroke-width="1.3"/>
+          <text x="390" y="139" text-anchor="middle" font-size="12.5" font-weight="600">Nginx / Apache · Laragon</text>
+
+          <line x1="390" y1="154" x2="390" y2="180" stroke="#0E1E24" stroke-width="1.5" marker-end="url(#ah)"/>
+
+          <!-- Application box -->
+          <rect x="40" y="182" width="700" height="234" rx="14" fill="#f4f7f9" stroke="#0E1E24" stroke-width="1.5"/>
+          <text x="60" y="206" font-size="12" font-weight="700" letter-spacing="1">LARAVEL 12 · PHP 8.4</text>
+
+          <rect x="60" y="220" width="300" height="46" rx="9" fill="#ffffff" stroke="#0E1E24" stroke-width="1.2"/>
+          <text x="210" y="242" text-anchor="middle" font-size="12.5" font-weight="600">HTTP / Inertia controllers</text>
+          <text x="210" y="258" text-anchor="middle" font-size="10.5" fill="#4a5a62">validation · props · pagination</text>
+
+          <rect x="372" y="220" width="308" height="46" rx="9" fill="#ffffff" stroke="#0E1E24" stroke-width="1.2"/>
+          <text x="526" y="242" text-anchor="middle" font-size="12.5" font-weight="600">RBAC policies · audit · tenancy scope</text>
+          <text x="526" y="258" text-anchor="middle" font-size="10.5" fill="#4a5a62">company_id enforced on every query</text>
+
+          <rect x="60" y="278" width="380" height="52" rx="9" fill="#ffffff" stroke="#0E1E24" stroke-width="1.2"/>
+          <text x="250" y="300" text-anchor="middle" font-size="12.5" font-weight="600">Module domain services</text>
+          <text x="250" y="317" text-anchor="middle" font-size="10.5" fill="#4a5a62">Purchase · Sales · Mfg · Inventory · Consignment · HR</text>
+
+          <!-- posting engine highlight -->
+          <rect x="452" y="278" width="228" height="52" rx="9" fill="#0E7C6B" stroke="#0A5F52" stroke-width="1.4"/>
+          <text x="566" y="300" text-anchor="middle" font-size="12.5" font-weight="700" fill="#ffffff">POSTING ENGINE</text>
+          <text x="566" y="317" text-anchor="middle" font-size="10.5" fill="#cdece6">the only writer of journals</text>
+
+          <line x1="250" y1="330" x2="450" y2="342" stroke="#0E1E24" stroke-width="1.4" marker-end="url(#ah)"/>
+          <text x="300" y="332" font-size="10.5" fill="#4a5a62">business event</text>
+
+          <rect x="60" y="352" width="620" height="48" rx="9" fill="#ffffff" stroke="#0E1E24" stroke-width="1.2"/>
+          <text x="370" y="374" text-anchor="middle" font-size="12.5" font-weight="600">Domain events → queued jobs (Horizon): PDF · Excel · notifications · report warm-up</text>
+          <text x="370" y="390" text-anchor="middle" font-size="10.5" fill="#4a5a62">side-effects off the request path</text>
+
+          <!-- data stores -->
+          <line x1="566" y1="416" x2="566" y2="452" stroke="#0E1E24" stroke-width="1.6" marker-end="url(#ah)"/>
+          <text x="576" y="438" font-size="11" fill="#4a5a62">TX commit</text>
+          <rect x="360" y="454" width="270" height="80" rx="12" fill="#dfeee9" stroke="#0A5F52" stroke-width="1.5"/>
+          <text x="495" y="482" text-anchor="middle" font-size="14" font-weight="700">PostgreSQL 16</text>
+          <text x="495" y="502" text-anchor="middle" font-size="11" fill="#3a4a52">OLTP + immutable ledger</text>
+          <text x="495" y="519" text-anchor="middle" font-size="11" fill="#3a4a52">NUMERIC money · constraints · window fns</text>
+
+          <line x1="210" y1="416" x2="210" y2="452" stroke="#0E1E24" stroke-width="1.4" marker-end="url(#ah)"/>
+          <rect x="90" y="454" width="230" height="80" rx="12" fill="#ffffff" stroke="#0E1E24" stroke-width="1.3"/>
+          <text x="205" y="482" text-anchor="middle" font-size="14" font-weight="700">Redis</text>
+          <text x="205" y="502" text-anchor="middle" font-size="11" fill="#3a4a52">cache · queue · sessions</text>
+          <text x="205" y="519" text-anchor="middle" font-size="11" fill="#3a4a52">balance snapshots</text>
+        </g>
+      </svg>
+    </div>
+    <figcaption><b>Figure 1 — Layered architecture.</b> The client speaks Inertia, not REST, so there is no second API surface to keep in sync. Inside Laravel, module services describe <em>what happened</em>; the highlighted Posting Engine decides <em>how it hits the books</em> and is the sole writer of journal entries, all inside one Postgres transaction.</figcaption>
+  </figure>
+</section>
+
+<!-- ======================= 03 MODULE MAP ======================= -->
+<section id="modules">
+  <span class="snum">03</span>
+  <h2>Module map</h2>
+  <p>Eight modules, but only one of them writes to the ledger's core tables. The others are <em>producers of business events</em>. This is what "accounting is the backbone" means in practice.</p>
+
+  <div class="tablewrap"><table>
+    <thead><tr><th>Module</th><th>Owns</th><th>Emits to ledger</th></tr></thead>
+    <tbody>
+      <tr><td><b>Accounting &amp; Finance</b></td><td>Chart of accounts, journals, GL, AR/AP subledgers, cost centers, bank/cash, fiscal years, reports</td><td><span class="tag">is the ledger</span></td></tr>
+      <tr><td><b>Inventory / Stock</b></td><td>Items, warehouses, batch/serial, stock ledger, valuation (FIFO/WAC), adjustments, stock-take</td><td>Inventory ↔ COGS / GRN-clearing / variance</td></tr>
+      <tr><td><b>Manufacturing</b></td><td>BOM, work orders, material issue, FG receipt, WIP, scrap, production costing</td><td>Raw→WIP→FG, labour &amp; overhead applied, scrap loss</td></tr>
+      <tr><td><b>Purchase</b></td><td>Suppliers, PO, GRN, bills, purchase returns, landed cost, supplier ledger</td><td>Inventory/GRN-clearing, AP, input tax, freight</td></tr>
+      <tr><td><b>Sales</b></td><td>Customers, quotation, SO, invoice, delivery, returns, price lists, discounts</td><td>AR, revenue, output tax, COGS</td></tr>
+      <tr><td><b>Inter-warehouse consignment</b></td><td>Trucks/trips, stages (legs), per-leg buy/sell value &amp; expenses, per-stage &amp; cumulative P&amp;L</td><td>Goods-in-transit, transfer, per-leg expense, final sale — all tagged to a consignment cost center</td></tr>
+      <tr><td><b>HR &amp; Payroll</b></td><td>Employees, departments, attendance, shifts, leave, salary structures, payroll runs, payslips</td><td>Salary/wages expense by dept, statutory &amp; deduction payables, net-pay payable</td></tr>
+      <tr><td><b>Platform (cross-cutting)</b></td><td>RBAC, multi-currency, tax config, audit log, attachments, notifications, dashboards, export, backups</td><td>—</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ======================= 04 FOUNDATION ======================= -->
+<section id="foundation">
+  <span class="snum">04</span>
+  <h2>Foundation &amp; multi-tenancy</h2>
+  <p>Every business table carries a <code>company_id</code>. A global Eloquent scope adds <code>WHERE company_id = ?</code> to every query automatically from the resolved tenant context, and a matching Postgres <strong>Row-Level Security</strong> policy is the backstop so a bug in app code can never leak another company's rows. A user can belong to several companies with a different role in each.</p>
+
+  <figure class="bleed">
+    <div class="figpanel"><pre class="mermaid">%%{init: {'theme':'neutral'}}%%
+erDiagram
+  COMPANIES ||--o{ COMPANY_USER : "has members"
+  USERS ||--o{ COMPANY_USER : "belongs to"
+  COMPANIES ||--o{ FISCAL_YEARS : defines
+  FISCAL_YEARS ||--o{ ACCOUNTING_PERIODS : "splits into"
+  COMPANIES ||--o{ ROLES : scopes
+  ROLES ||--o{ ROLE_PERMISSION : grants
+  PERMISSIONS ||--o{ ROLE_PERMISSION : "granted by"
+  COMPANY_USER }o--|| ROLES : "assigned"
+  COMPANIES ||--o{ CURRENCIES : enables
+  CURRENCIES ||--o{ EXCHANGE_RATES : "priced by"
+  COMPANIES ||--o{ AUDIT_LOGS : records
+  COMPANIES ||--o{ NUMBER_SEQUENCES : "per doc type"
+
+  COMPANIES {
+    bigint id PK
+    string name
+    string base_currency
+    jsonb  tax_config
+    int    fiscal_start_month
+  }
+  COMPANY_USER {
+    bigint company_id FK
+    bigint user_id FK
+    bigint role_id FK
+  }
+  ROLES {
+    bigint id PK
+    bigint company_id FK
+    string name
+  }
+  PERMISSIONS {
+    bigint id PK
+    string ability "e.g. invoice.post"
+  }
+  FISCAL_YEARS {
+    bigint id PK
+    date   starts_on
+    date   ends_on
+    string status "open|closed"
+  }
+  ACCOUNTING_PERIODS {
+    bigint id PK
+    date   starts_on
+    string status "open|locked"
+  }
+</pre></div>
+    <figcaption><b>Figure 2 — Tenancy, RBAC, calendar.</b> Granular permissions are verb-scoped abilities (<code>invoice.post</code>, <code>consignment.settle</code>), assigned to roles per company. Locked accounting periods reject any new posting — the first line of ledger defense.</figcaption>
+  </figure>
+</section>
+
+<!-- ======================= 05 ACCOUNTING ======================= -->
+<section id="accounting">
+  <span class="snum">05</span>
+  <h2>Accounting engine — the spine</h2>
+  <p>This is the schema everything else feeds. A <strong>journal</strong> is a voucher; its <strong>lines</strong> are the debits and credits. Two hard rules are enforced in the database, not just in code:</p>
+  <ul class="tight">
+    <li>Each line has a non-negative debit <em>or</em> credit, never both (<code>CHECK</code>).</li>
+    <li>The sum of debits equals the sum of credits per journal, checked at transaction commit with a <strong>deferred constraint trigger</strong> — a journal literally cannot be saved out of balance.</li>
+  </ul>
+  <p>Posted journals are <strong>immutable</strong>; corrections happen through reversing entries, so the audit trail is intact. Fast reports read from a maintained <code>account_period_balances</code> rollup rather than summing millions of lines.</p>
+
+  <figure class="bleed">
+    <div class="figpanel"><pre class="mermaid">%%{init: {'theme':'neutral'}}%%
+erDiagram
+  ACCOUNTS ||--o{ ACCOUNTS : "parent (tree)"
+  ACCOUNTS ||--o{ JOURNAL_LINES : "posted to"
+  JOURNALS ||--|{ JOURNAL_LINES : "balanced set"
+  COST_CENTERS ||--o{ JOURNAL_LINES : "dimension"
+  JOURNAL_LINES }o--o| PARTIES : "AR/AP subledger"
+  ACCOUNTS ||--o{ ACCOUNT_PERIOD_BALANCES : "rolled up"
+  JOURNALS }o--o| JOURNALS : "reverses"
+
+  ACCOUNTS {
+    bigint id PK
+    bigint company_id FK
+    string code
+    string name
+    enum   type "asset|liability|equity|income|expense"
+    bigint parent_id FK
+    bool   is_group
+    string control_type "none|ar|ap|inventory"
+    string currency
+  }
+  JOURNALS {
+    bigint id PK
+    bigint company_id FK
+    bigint period_id FK
+    date   entry_date
+    string number
+    string source_type "polymorphic"
+    bigint source_id
+    enum   status "draft|posted|void"
+    bigint reverses_id FK
+  }
+  JOURNAL_LINES {
+    bigint id PK
+    bigint journal_id FK
+    bigint account_id FK
+    bigint cost_center_id FK
+    numeric debit "19,4"
+    numeric credit "19,4"
+    string  currency
+    numeric fx_rate
+    numeric base_debit
+    numeric base_credit
+    string  party_type
+    bigint  party_id
+  }
+  COST_CENTERS {
+    bigint id PK
+    string name
+    string dimension "business|warehouse|consignment"
+  }
+  PARTIES {
+    bigint id PK
+    string kind "customer|supplier|employee"
+  }
+  ACCOUNT_PERIOD_BALANCES {
+    bigint account_id FK
+    bigint period_id FK
+    numeric debit_total
+    numeric credit_total
+  }
+</pre></div>
+    <figcaption><b>Figure 3 — Double-entry core.</b> <code>source_type/source_id</code> links every journal back to the document that caused it (invoice, GRN, payroll run…), so you can drill from any report line to its origin. <code>cost_center_id</code> is the dimension that later lets a whole consignment's P&amp;L reconcile to the GL. Amounts are stored in both transaction and base currency.</figcaption>
+  </figure>
+
+  <h3>Reports, straight off this schema</h3>
+  <p>Trial Balance, General Ledger, Day Book, P&amp;L, Balance Sheet, Cash Flow, and AR/AP Aging are all queries over <code>journal_lines</code> + <code>account_period_balances</code>, filtered by company, period, and optionally cost center. <strong>Single-entry / cash-book bookkeeping</strong> is offered as a simplified data-entry surface (a receipts &amp; payments book) that writes the same balanced journals underneath — you get the easy UX without a second, inconsistent ledger.</p>
+</section>
+
+<!-- ======================= 06 POSTING ======================= -->
+<section id="posting">
+  <span class="snum">06</span>
+  <h2>The universal posting rule</h2>
+  <p>Here is the mechanism that keeps the promise "every transaction in other modules posts to accounting automatically." Each source document implements one interface — <code>toJournal()</code> — returning a balanced set of lines. The Posting Engine wraps it in a transaction, validates the balance and the open period, writes the journal, and updates the balance rollup. Nothing else may write journals.</p>
+
+  <figure class="bleed">
+    <div class="figpanel">
+      <svg viewBox="0 0 820 500" role="img" aria-label="Hub-and-spoke: sales invoice, purchase GRN and bill, production receipt, stock movement, payroll run, and consignment expense each emit a balanced entry into the central posting engine, which writes one atomic balanced journal to the general ledger, from which trial balance, profit and loss, balance sheet and aging reports are derived.">
+        <defs>
+          <marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7.5" markerHeight="7.5" orient="auto-start-reverse">
+            <path d="M0 0 L10 5 L0 10 z" fill="#0E1E24"/>
+          </marker>
+        </defs>
+        <g font-family="IBM Plex Mono, monospace" fill="#0E1E24">
+          <!-- sources left -->
+          <g font-size="12">
+            <rect x="20" y="30"  width="196" height="42" rx="9" fill="#ffffff" stroke="#0E1E24" stroke-width="1.2"/><text x="118" y="56" text-anchor="middle">Sales invoice / return</text>
+            <rect x="20" y="92"  width="196" height="42" rx="9" fill="#ffffff" stroke="#0E1E24" stroke-width="1.2"/><text x="118" y="118" text-anchor="middle">Purchase GRN / bill</text>
+            <rect x="20" y="154" width="196" height="42" rx="9" fill="#ffffff" stroke="#0E1E24" stroke-width="1.2"/><text x="118" y="180" text-anchor="middle">Production receipt</text>
+            <rect x="20" y="216" width="196" height="42" rx="9" fill="#ffffff" stroke="#0E1E24" stroke-width="1.2"/><text x="118" y="242" text-anchor="middle">Stock movement</text>
+            <rect x="20" y="278" width="196" height="42" rx="9" fill="#ffffff" stroke="#0E1E24" stroke-width="1.2"/><text x="118" y="304" text-anchor="middle">Payroll run</text>
+            <rect x="20" y="340" width="196" height="42" rx="9" fill="#ffffff" stroke="#0E1E24" stroke-width="1.2"/><text x="118" y="366" text-anchor="middle">Consignment expense</text>
+          </g>
+          <!-- arrows to hub -->
+          <g stroke="#0E1E24" stroke-width="1.3" fill="none">
+            <path d="M216 51  C 300 60, 330 180, 372 205" marker-end="url(#ah2)"/>
+            <path d="M216 113 C 300 130, 340 190, 372 214" marker-end="url(#ah2)"/>
+            <path d="M216 175 C 300 190, 350 205, 372 222" marker-end="url(#ah2)"/>
+            <path d="M216 237 C 300 240, 350 235, 372 236" marker-end="url(#ah2)"/>
+            <path d="M216 299 C 300 290, 345 265, 372 248" marker-end="url(#ah2)"/>
+            <path d="M216 361 C 300 350, 335 285, 372 258" marker-end="url(#ah2)"/>
+          </g>
+          <text x="245" y="150" font-size="10.5" fill="#4a5a62" transform="rotate(-14 245 150)">toJournal()</text>
+
+          <!-- hub -->
+          <rect x="372" y="176" width="204" height="118" rx="14" fill="#0E7C6B" stroke="#0A5F52" stroke-width="1.6"/>
+          <text x="474" y="212" text-anchor="middle" font-size="14" font-weight="700" fill="#ffffff">POSTING ENGINE</text>
+          <text x="474" y="234" text-anchor="middle" font-size="10.5" fill="#d3ede7">1 · balance check</text>
+          <text x="474" y="251" text-anchor="middle" font-size="10.5" fill="#d3ede7">2 · period open?</text>
+          <text x="474" y="268" text-anchor="middle" font-size="10.5" fill="#d3ede7">3 · write in one TX</text>
+          <text x="474" y="285" text-anchor="middle" font-size="10.5" fill="#d3ede7">4 · roll up balances</text>
+
+          <!-- to ledger -->
+          <path d="M576 235 L 632 235" stroke="#0E1E24" stroke-width="1.6" fill="none" marker-end="url(#ah2)"/>
+          <rect x="634" y="176" width="166" height="118" rx="14" fill="#dfeee9" stroke="#0A5F52" stroke-width="1.5"/>
+          <text x="717" y="220" text-anchor="middle" font-size="13" font-weight="700">General ledger</text>
+          <text x="717" y="242" text-anchor="middle" font-size="10.5" fill="#3a4a52">immutable journals</text>
+          <text x="717" y="259" text-anchor="middle" font-size="10.5" fill="#3a4a52">+ balance rollup</text>
+
+          <!-- down to reports -->
+          <path d="M474 294 L 474 350" stroke="#0E1E24" stroke-width="1.6" fill="none" marker-end="url(#ah2)"/>
+          <rect x="250" y="352" width="448" height="70" rx="12" fill="#ffffff" stroke="#0E1E24" stroke-width="1.3"/>
+          <text x="474" y="380" text-anchor="middle" font-size="12.5" font-weight="600">Trial Balance · P&amp;L · Balance Sheet · Cash Flow · Aging</text>
+          <text x="474" y="402" text-anchor="middle" font-size="10.5" fill="#4a5a62">filtered by company · period · cost center — always in balance</text>
+        </g>
+      </svg>
+    </div>
+    <figcaption><b>Figure 4 — One door to the books.</b> Because posting is centralized behind a single interface and a single transaction, "the ledger always balances" is a structural guarantee, not a discipline. A test asserts <code>Σdebit = Σcredit</code> after every document type.</figcaption>
+  </figure>
+</section>
+
+<!-- ======================= 07 INVENTORY ======================= -->
+<section id="inventory">
+  <span class="snum">07</span>
+  <h2>Inventory &amp; valuation</h2>
+  <p>The heart of inventory is one append-only table: <code>stock_ledger_entries</code>. Every receipt, issue, transfer, adjustment, and production move writes a signed quantity and a valuation rate, with a running quantity and running value per item-warehouse. Valuation method is <strong>configurable per item</strong> (company default applies otherwise):</p>
+  <div class="grid2">
+    <div class="card"><span class="k">Weighted average</span><h4>Running value ÷ running qty</h4><p>Cheap, smooth, no layer bookkeeping — recomputed on every inward move. Good default for manufacturing where raw materials are fungible.</p></div>
+    <div class="card"><span class="k">FIFO</span><h4>Consumes valuation layers oldest-first</h4><p><code>valuation_layers</code> holds each receipt's remaining qty &amp; unit cost; an issue walks layers front-to-back. Exact cost of goods, batch-friendly.</p></div>
+  </div>
+  <p>Batch/lot tracking is standard; <strong>serial tracking is optional per item</strong>. <strong>Landed costs</strong> (freight, duty, clearing) allocate across receipt lines and raise the layer cost. Every stock move triggers a matching journal via the posting engine (e.g. issue to production: <span class="mono">Dr WIP / Cr Raw-material inventory</span>).</p>
+
+  <figure class="bleed">
+    <div class="figpanel"><pre class="mermaid">%%{init: {'theme':'neutral'}}%%
+erDiagram
+  ITEMS ||--o{ STOCK_LEDGER_ENTRIES : moves
+  WAREHOUSES ||--o{ STOCK_LEDGER_ENTRIES : "at"
+  ITEMS ||--o{ VALUATION_LAYERS : "FIFO cost"
+  ITEMS ||--o{ BATCHES : "lot"
+  ITEMS ||--o{ SERIALS : "optional"
+  BATCHES ||--o{ STOCK_LEDGER_ENTRIES : "tagged"
+  ITEMS }o--|| UOMS : "base unit"
+  WAREHOUSES }o--|| COST_CENTERS : "maps to"
+  STOCK_LEDGER_ENTRIES }o--o| VALUATION_LAYERS : "consumes"
+
+  ITEMS {
+    bigint id PK
+    string sku
+    enum   kind "raw|wip|finished|service"
+    enum   tracking "none|batch|serial"
+    enum   valuation "wac|fifo|standard"
+    numeric reorder_level
+    bool   is_manufactured
+  }
+  WAREHOUSES {
+    bigint id PK
+    string name
+    bigint cost_center_id FK
+  }
+  STOCK_LEDGER_ENTRIES {
+    bigint id PK
+    bigint item_id FK
+    bigint warehouse_id FK
+    bigint batch_id FK
+    date   posting_date
+    string voucher_type
+    bigint voucher_id
+    numeric qty "signed"
+    numeric rate
+    numeric value
+    numeric running_qty
+    numeric running_value
+  }
+  VALUATION_LAYERS {
+    bigint id PK
+    bigint item_id FK
+    bigint warehouse_id FK
+    numeric qty_in
+    numeric qty_remaining
+    numeric unit_cost
+    timestamp received_at
+  }
+  BATCHES {
+    bigint id PK
+    string batch_no
+    date   expiry
+  }
+</pre></div>
+    <figcaption><b>Figure 5 — Stock ledger &amp; valuation.</b> The append-only ledger is the source of truth for both quantity and value; the GL inventory account is kept equal to <code>Σ running_value</code> by construction, so stock and books never drift.</figcaption>
+  </figure>
+</section>
+
+<!-- ======================= 08 MANUFACTURING ======================= -->
+<section id="manufacturing">
+  <span class="snum">08</span>
+  <h2>Manufacturing</h2>
+  <p>A <strong>BOM</strong> lists component items (with scrap %) and, optionally, operations that carry labour and overhead. A <strong>work order</strong> issues raw materials into WIP, applies labour + overhead, and receives finished goods back at computed cost: <span class="mono">FG unit cost = (material + labour + overhead − scrap recovery) ÷ good qty</span>. Each step posts through the engine, so WIP on the balance sheet always equals real work in progress.</p>
+
+  <figure class="bleed">
+    <div class="figpanel"><pre class="mermaid">%%{init: {'theme':'neutral'}}%%
+erDiagram
+  BOMS ||--|{ BOM_COMPONENTS : "raw items"
+  BOMS ||--o{ BOM_OPERATIONS : "labour/overhead"
+  ITEMS ||--o{ BOMS : "produces"
+  BOMS ||--o{ WORK_ORDERS : "used by"
+  WORK_ORDERS ||--o{ MATERIAL_ISSUES : consumes
+  WORK_ORDERS ||--o{ PRODUCTION_RECEIPTS : outputs
+  WORK_ORDERS ||--o{ SCRAP_ENTRIES : wastage
+  MATERIAL_ISSUES }o--|| STOCK_LEDGER_ENTRIES : "raw out"
+  PRODUCTION_RECEIPTS }o--|| STOCK_LEDGER_ENTRIES : "FG in"
+
+  BOMS {
+    bigint id PK
+    bigint item_id FK
+    int    version
+    numeric output_qty
+    bool   is_active
+  }
+  BOM_COMPONENTS {
+    bigint bom_id FK
+    bigint item_id FK
+    numeric qty
+    numeric scrap_pct
+  }
+  BOM_OPERATIONS {
+    bigint bom_id FK
+    string operation
+    numeric hours
+    numeric rate
+    string cost_type "labour|overhead"
+  }
+  WORK_ORDERS {
+    bigint id PK
+    bigint bom_id FK
+    numeric qty_planned
+    numeric qty_produced
+    enum   status "draft|released|wip|done"
+    numeric material_cost
+    numeric labour_cost
+    numeric overhead_cost
+  }
+  SCRAP_ENTRIES {
+    bigint id PK
+    bigint item_id FK
+    numeric qty
+    numeric value
+  }
+</pre></div>
+    <figcaption><b>Figure 6 — BOM &amp; production costing.</b> Overhead absorption (per labour-hour, % of material, or actual) is a company setting — flagged as an open question below. Scrap is valued and either recovered to a scrap store or written off to a loss account.</figcaption>
+  </figure>
+</section>
+
+<!-- ======================= 09 TRADE ======================= -->
+<section id="trade">
+  <span class="snum">09</span>
+  <h2>Purchase &amp; sales</h2>
+  <p>Both sides share a shape: a document flows <em>order → receipt/delivery → invoice → payment/return</em>, each step optional but linked. Purchase drives AP + inventory-in; sales drives AR + COGS + inventory-out. Taxes come from the configurable tax engine (§13), discounts and price lists resolve per line, and party ledgers are just the AR/AP subledger filtered by <code>party_id</code>.</p>
+
+  <figure class="bleed">
+    <div class="figpanel"><pre class="mermaid">%%{init: {'theme':'neutral'}}%%
+erDiagram
+  SUPPLIERS ||--o{ PURCHASE_ORDERS : places
+  PURCHASE_ORDERS ||--o{ GRNS : "received via"
+  GRNS ||--o{ PURCHASE_BILLS : "billed via"
+  GRNS ||--o{ LANDED_COSTS : "freight/duty"
+  CUSTOMERS ||--o{ SALES_ORDERS : places
+  SALES_ORDERS ||--o{ DELIVERIES : "shipped via"
+  SALES_ORDERS ||--o{ SALES_INVOICES : "billed via"
+  PRICE_LISTS ||--o{ PRICE_LIST_ITEMS : contains
+  CUSTOMERS }o--o| PRICE_LISTS : "priced by"
+  SALES_INVOICES ||--o{ INVOICE_LINES : "lines"
+  INVOICE_LINES }o--|| TAX_CODES : "taxed by"
+
+  SUPPLIERS {
+    bigint id PK
+    string name
+    string tax_reg_no
+    string terms
+    bigint ap_account_id FK
+  }
+  CUSTOMERS {
+    bigint id PK
+    string name
+    string tax_reg_no
+    numeric credit_limit
+    bigint ar_account_id FK
+  }
+  SALES_INVOICES {
+    bigint id PK
+    bigint customer_id FK
+    date   invoice_date
+    numeric subtotal
+    numeric tax_total
+    numeric grand_total
+    enum   status "draft|posted|paid|void"
+  }
+  INVOICE_LINES {
+    bigint id PK
+    bigint item_id FK
+    numeric qty
+    numeric rate
+    numeric discount
+    bigint tax_code_id FK
+  }
+  LANDED_COSTS {
+    bigint id PK
+    string kind "freight|duty|clearing"
+    numeric amount
+  }
+</pre></div>
+    <figcaption><b>Figure 7 — Trade documents.</b> Posting a sales invoice emits two coupled journals in one transaction: the revenue side (<span class="mono">Dr AR / Cr Revenue + Cr Output-tax</span>) and, driven by the stock ledger, the cost side (<span class="mono">Dr COGS / Cr Inventory</span>).</figcaption>
+  </figure>
+</section>
+
+<!-- ======================= 10 CONSIGNMENT ======================= -->
+<section id="consignment">
+  <span class="snum">10</span>
+  <h2>Inter-warehouse consignment — the critical model</h2>
+  <p>This is the piece worth getting exactly right. A <strong>consignment</strong> is a truck-load of goods that moves through an ordered chain of <strong>legs</strong> (stages), warehouse → warehouse → … → customer. Each leg records a <strong>buy value</strong> (cost of goods entering the leg), a <strong>sell value</strong> (transfer valuation leaving it, or the real customer sale on the last leg), and its own pile of <strong>expenses</strong> (transport, fuel, labour, loading, tolls, misc.). The margin of a leg is <span class="mono">sell − buy − expenses</span>; the carry-out of one leg is the buy of the next, so cumulative P&amp;L telescopes to <span class="mono">final sale − initial cost − all expenses</span>.</p>
+
+  <figure class="bleed">
+    <div class="figpanel">
+      <svg viewBox="0 0 980 470" role="img" aria-label="A consignment moving through three stages. Stage 1 warehouse A to B: buy 100000, expenses 8000, sell 112000, margin 4000. Stage 2 warehouse B to C: buy 112000, expenses 6000, sell 121000, margin 3000. Stage 3 warehouse C to customer: buy 121000, expenses 5000, sell 140000, margin 14000. Carry-out of each stage becomes the buy of the next. Cumulative profit 21000 equals final sale 140000 minus initial cost 100000 minus total expenses 19000.">
+        <defs>
+          <marker id="ah3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+            <path d="M0 0 L10 5 L0 10 z" fill="#0E1E24"/>
+          </marker>
+        </defs>
+        <g font-family="IBM Plex Mono, monospace" fill="#0E1E24">
+          <text x="20" y="28" font-size="12" font-weight="700" letter-spacing="1">CONSIGNMENT #TRK-2041 · 3 LEGS</text>
+
+          <!-- STAGE 1 -->
+          <g>
+            <rect x="20" y="46" width="272" height="230" rx="13" fill="#ffffff" stroke="#0E1E24" stroke-width="1.4"/>
+            <text x="40" y="74" font-size="13" font-weight="700">Stage 1 · WH-A → WH-B</text>
+            <text x="40" y="112" font-size="12" fill="#3a4a52">Buy value (goods in)</text>   <text x="272" y="112" text-anchor="end" font-size="13" font-weight="600">100,000</text>
+            <line x1="40" y1="124" x2="272" y2="124" stroke="#d3dce3"/>
+            <text x="40" y="148" font-size="12" fill="#3a4a52">+ Transport</text>            <text x="272" y="148" text-anchor="end" font-size="12">5,000</text>
+            <text x="40" y="170" font-size="12" fill="#3a4a52">+ Loading / labour</text>     <text x="272" y="170" text-anchor="end" font-size="12">3,000</text>
+            <line x1="40" y1="182" x2="272" y2="182" stroke="#d3dce3"/>
+            <text x="40" y="206" font-size="12" fill="#3a4a52">Sell value (transfer out)</text><text x="272" y="206" text-anchor="end" font-size="13" font-weight="600">112,000</text>
+            <rect x="40" y="222" width="232" height="34" rx="8" fill="#dfeee9" stroke="#0A5F52"/>
+            <text x="52" y="244" font-size="12" font-weight="600" fill="#0A5F52">Leg margin</text>
+            <text x="260" y="244" text-anchor="end" font-size="13" font-weight="700" fill="#0A5F52">+4,000</text>
+          </g>
+          <path d="M292 160 L 344 160" stroke="#0E1E24" stroke-width="1.6" fill="none" marker-end="url(#ah3)"/>
+          <text x="318" y="150" text-anchor="middle" font-size="9.5" fill="#4a5a62">carry</text>
+
+          <!-- STAGE 2 -->
+          <g>
+            <rect x="346" y="46" width="272" height="230" rx="13" fill="#ffffff" stroke="#0E1E24" stroke-width="1.4"/>
+            <text x="366" y="74" font-size="13" font-weight="700">Stage 2 · WH-B → WH-C</text>
+            <text x="366" y="112" font-size="12" fill="#3a4a52">Buy value (goods in)</text>   <text x="598" y="112" text-anchor="end" font-size="13" font-weight="600">112,000</text>
+            <line x1="366" y1="124" x2="598" y2="124" stroke="#d3dce3"/>
+            <text x="366" y="148" font-size="12" fill="#3a4a52">+ Fuel / tolls</text>          <text x="598" y="148" text-anchor="end" font-size="12">4,000</text>
+            <text x="366" y="170" font-size="12" fill="#3a4a52">+ Labour</text>                <text x="598" y="170" text-anchor="end" font-size="12">2,000</text>
+            <line x1="366" y1="182" x2="598" y2="182" stroke="#d3dce3"/>
+            <text x="366" y="206" font-size="12" fill="#3a4a52">Sell value (transfer out)</text><text x="598" y="206" text-anchor="end" font-size="13" font-weight="600">121,000</text>
+            <rect x="366" y="222" width="232" height="34" rx="8" fill="#dfeee9" stroke="#0A5F52"/>
+            <text x="378" y="244" font-size="12" font-weight="600" fill="#0A5F52">Leg margin</text>
+            <text x="586" y="244" text-anchor="end" font-size="13" font-weight="700" fill="#0A5F52">+3,000</text>
+          </g>
+          <path d="M618 160 L 670 160" stroke="#0E1E24" stroke-width="1.6" fill="none" marker-end="url(#ah3)"/>
+          <text x="644" y="150" text-anchor="middle" font-size="9.5" fill="#4a5a62">carry</text>
+
+          <!-- STAGE 3 -->
+          <g>
+            <rect x="672" y="46" width="288" height="230" rx="13" fill="#ffffff" stroke="#0E1E24" stroke-width="1.4"/>
+            <text x="692" y="74" font-size="13" font-weight="700">Stage 3 · WH-C → Customer</text>
+            <text x="692" y="112" font-size="12" fill="#3a4a52">Buy value (goods in)</text>   <text x="940" y="112" text-anchor="end" font-size="13" font-weight="600">121,000</text>
+            <line x1="692" y1="124" x2="940" y2="124" stroke="#d3dce3"/>
+            <text x="692" y="148" font-size="12" fill="#3a4a52">+ Delivery</text>              <text x="940" y="148" text-anchor="end" font-size="12">5,000</text>
+            <text x="692" y="170" font-size="12" fill="#3a4a52">&nbsp;</text>
+            <line x1="692" y1="182" x2="940" y2="182" stroke="#d3dce3"/>
+            <text x="692" y="206" font-size="12" fill="#3a4a52">Sell value (real sale)</text> <text x="940" y="206" text-anchor="end" font-size="13" font-weight="600">140,000</text>
+            <rect x="692" y="222" width="248" height="34" rx="8" fill="#0E7C6B" stroke="#0A5F52"/>
+            <text x="704" y="244" font-size="12" font-weight="600" fill="#ffffff">Leg margin</text>
+            <text x="928" y="244" text-anchor="end" font-size="13" font-weight="700" fill="#ffffff">+14,000</text>
+          </g>
+
+          <!-- cumulative bar -->
+          <rect x="20" y="306" width="940" height="132" rx="13" fill="#eef3f6" stroke="#0E1E24" stroke-width="1.2"/>
+          <text x="40" y="334" font-size="12" font-weight="700" letter-spacing="1">CUMULATIVE P&amp;L FOR THE JOURNEY</text>
+          <text x="40" y="366" font-size="12" fill="#3a4a52">Final sale</text>            <text x="300" y="366" text-anchor="end" font-size="12.5" font-weight="600">140,000</text>
+          <text x="40" y="388" font-size="12" fill="#3a4a52">− Initial cost of goods</text><text x="300" y="388" text-anchor="end" font-size="12.5">100,000</text>
+          <text x="40" y="410" font-size="12" fill="#3a4a52">− Total expenses (5+3+4+2+5)</text><text x="300" y="410" text-anchor="end" font-size="12.5">19,000</text>
+          <line x1="360" y1="330" x2="360" y2="418" stroke="#c3ced6"/>
+          <text x="392" y="360" font-size="12" fill="#3a4a52">Σ leg margins</text>
+          <text x="392" y="382" font-size="12.5">4,000 + 3,000 + 14,000</text>
+          <rect x="640" y="336" width="300" height="74" rx="11" fill="#0E7C6B"/>
+          <text x="660" y="366" font-size="13" fill="#cdece6">Total consignment profit</text>
+          <text x="920" y="392" text-anchor="end" font-size="26" font-weight="800" fill="#ffffff">+21,000</text>
+        </g>
+      </svg>
+    </div>
+    <figcaption><b>Figure 8 — Stage-by-stage and cumulative P&amp;L.</b> Interior legs use an internal transfer valuation as their "sell"; only the final leg books a real customer sale. Every expense and the final sale post to the GL tagged with this consignment's <em>cost center</em> — so this managerial view <strong>reconciles exactly</strong> to a GL P&amp;L filtered on that cost center. No shadow accounting.</figcaption>
+  </figure>
+
+  <figure class="bleed">
+    <div class="figpanel"><pre class="mermaid">%%{init: {'theme':'neutral'}}%%
+erDiagram
+  CONSIGNMENTS ||--|{ CONSIGNMENT_LEGS : "ordered stages"
+  CONSIGNMENTS ||--o{ CONSIGNMENT_ITEMS : "cargo"
+  CONSIGNMENT_LEGS ||--o{ LEG_ITEMS : "per-item buy/sell"
+  CONSIGNMENT_LEGS ||--o{ CONSIGNMENT_EXPENSES : "leg costs"
+  CONSIGNMENTS }o--|| COST_CENTERS : "reconciles via"
+  CONSIGNMENT_LEGS }o--|| WAREHOUSES : "from"
+  CONSIGNMENT_LEGS }o--|| WAREHOUSES : "to"
+  CONSIGNMENT_EXPENSES }o--o| JOURNALS : "posted as"
+
+  CONSIGNMENTS {
+    bigint id PK
+    string ref_no
+    string vehicle_no
+    bigint cost_center_id FK
+    enum   status "planning|in_transit|done|settled"
+  }
+  CONSIGNMENT_LEGS {
+    bigint id PK
+    int    sequence
+    bigint from_warehouse_id FK
+    bigint to_warehouse_id FK
+    numeric buy_value
+    numeric sell_value
+    numeric expense_total
+    numeric margin "derived"
+  }
+  LEG_ITEMS {
+    bigint id PK
+    bigint item_id FK
+    numeric qty
+    numeric buy_rate
+    numeric sell_rate
+  }
+  CONSIGNMENT_EXPENSES {
+    bigint id PK
+    bigint leg_id FK
+    enum   kind "transport|fuel|labour|loading|tolls|misc"
+    numeric amount
+    bigint account_id FK
+    string paid_from "cash|bank|payable"
+  }
+</pre></div>
+    <figcaption><b>Figure 9 — Consignment schema.</b> Legs are an ordered chain (<code>sequence</code>); <code>margin</code> is a generated/derived column. The link to a dedicated <code>cost_center</code> is what ties the whole journey back into double-entry accounting.</figcaption>
+  </figure>
+</section>
+
+<!-- ======================= 11 HR ======================= -->
+<section id="hr">
+  <span class="snum">11</span>
+  <h2>HR &amp; payroll</h2>
+  <p>Employees sit in departments (each mapped to a cost center) with a salary structure of earning and deduction components. Attendance and leave feed a <strong>payroll run</strong> that produces payslips and posts one consolidated journal: <span class="mono">Dr salary/wages expense</span> per department cost center, <span class="mono">Cr</span> statutory-, deduction-, and net-pay payables. Paying salaries later clears the net-pay payable against the bank.</p>
+  <figure class="bleed">
+    <div class="figpanel"><pre class="mermaid">%%{init: {'theme':'neutral'}}%%
+erDiagram
+  DEPARTMENTS ||--o{ EMPLOYEES : contains
+  EMPLOYEES ||--o{ ATTENDANCE : logs
+  EMPLOYEES ||--o{ LEAVE_REQUESTS : takes
+  EMPLOYEES ||--|| SALARY_STRUCTURES : "assigned"
+  SALARY_STRUCTURES ||--|{ SALARY_COMPONENTS : "earn/deduct"
+  PAYROLL_RUNS ||--|{ PAYSLIPS : produces
+  EMPLOYEES ||--o{ PAYSLIPS : "for"
+  PAYSLIPS ||--|{ PAYSLIP_LINES : "components"
+  DEPARTMENTS }o--|| COST_CENTERS : "maps to"
+  PAYROLL_RUNS }o--o| JOURNALS : "posted as"
+
+  EMPLOYEES {
+    bigint id PK
+    string name
+    bigint department_id FK
+    date   joined_on
+  }
+  SALARY_COMPONENTS {
+    bigint id PK
+    string name
+    enum   kind "earning|deduction"
+    string calc "fixed|percent|formula"
+  }
+  PAYROLL_RUNS {
+    bigint id PK
+    date   period_start
+    date   period_end
+    enum   status "draft|approved|posted|paid"
+  }
+  PAYSLIP_LINES {
+    bigint id PK
+    bigint component_id FK
+    numeric amount
+  }
+</pre></div>
+    <figcaption><b>Figure 10 — Payroll to ledger.</b> Salary components are calculation rules (fixed, percent, or formula), so allowances and deductions are configured, not coded.</figcaption>
+  </figure>
+</section>
+
+<!-- ======================= 12 SEQUENCE ======================= -->
+<section id="sequence">
+  <span class="snum">12</span>
+  <h2>Build sequence</h2>
+  <p>Bottom-up, so each module posts into something that already works. We build the spine first, prove inventory valuation next, then layer the flows that depend on both. <strong>Each phase ends with: schema/migrations → API → UI → wired into accounting → a passing test</strong>, and I pause for your review before the next.</p>
+
+  <div class="phase"><span class="badge">0</span><div><h4>Foundation &amp; UI shell</h4><p>Scaffold, auth (Fortify), RBAC, companies + tenancy scope + Postgres RLS, currencies, fiscal years/periods, audit log. App layout, navigation, theme, and the reusable data-grid.</p><div class="dep">depends on: nothing</div></div></div>
+  <div class="phase"><span class="badge">1</span><div><h4>Accounting engine</h4><p>Chart of accounts, journals + lines, the posting engine &amp; balance triggers, period locking, cost centers. Trial Balance, GL, Day Book. <b>The backbone — everything after posts here.</b></p><div class="dep">depends on: 0</div></div></div>
+  <div class="phase"><span class="badge">2</span><div><h4>Inventory core</h4><p>Items, UOM, warehouses, batch/serial, the stock ledger, WAC + FIFO valuation, adjustments, stock-take. Wire stock moves ↔ GL.</p><div class="dep">depends on: 1</div></div></div>
+  <div class="phase"><span class="badge">3</span><div><h4>Purchase</h4><p>Suppliers, PO, GRN, bills, landed cost, returns, supplier ledger. Posts to AP + inventory-in + input tax.</p><div class="dep">depends on: 1, 2</div></div></div>
+  <div class="phase"><span class="badge">4</span><div><h4>Sales</h4><p>Customers, quotation, SO, invoice, delivery, returns, price lists, discounts. Posts to AR + revenue + output tax + COGS.</p><div class="dep">depends on: 1, 2</div></div></div>
+  <div class="phase"><span class="badge">5</span><div><h4>Manufacturing</h4><p>BOM, work orders, material issue, FG receipt, costing, scrap. Posts Raw→WIP→FG + labour/overhead.</p><div class="dep">depends on: 1, 2</div></div></div>
+  <div class="phase"><span class="badge">6</span><div><h4>Inter-warehouse consignment</h4><p>The trip/leg model, per-leg buy/sell &amp; expenses, per-stage + cumulative P&amp;L, cost-center reconciliation to GL.</p><div class="dep">depends on: 1, 2, 4</div></div></div>
+  <div class="phase"><span class="badge">7</span><div><h4>HR &amp; payroll</h4><p>Employees, attendance, leave, shifts, salary structures, payroll runs, payslips. Posts to expense + payables.</p><div class="dep">depends on: 1</div></div></div>
+  <div class="phase"><span class="badge">8</span><div><h4>Statements, dashboards &amp; polish</h4><p>P&amp;L, Balance Sheet, Cash Flow, Aging; dashboards; Excel/PDF export; notifications; multi-currency revaluation; backup strategy.</p><div class="dep">depends on: all</div></div></div>
+</section>
+
+<!-- ======================= 13 ASSUMPTIONS ======================= -->
+<section id="assumptions" style="border-bottom:none">
+  <span class="snum">13</span>
+  <h2>Assumptions &amp; questions before I finalize</h2>
+  <p>These are the business-logic ambiguities I've made a default call on. Tell me where I'm wrong and I'll fold it into the final design before any feature code is written.</p>
+
+  <div class="tablewrap"><table>
+    <thead><tr><th>Topic</th><th>My default assumption</th><th>Need from you</th></tr></thead>
+    <tbody>
+      <tr><td><b>Base currency</b></td><td>Configurable per company; primary is <b>PKR</b>, multi-currency enabled</td><td><span class="tag w">confirm</span> Base currency? Which foreign currencies trade?</td></tr>
+      <tr><td><b>Valuation default</b></td><td><b>Weighted average</b> company-wide, FIFO opt-in per item</td><td><span class="tag w">confirm</span> Agree, or FIFO by default?</td></tr>
+      <tr><td><b>Tax engine</b></td><td>Generic configurable tax codes (rate, inclusive/exclusive, rounding, input/output accounts)</td><td><span class="tag w">confirm</span> Any GST/withholding rules I should pre-seed? Invoice legal fields?</td></tr>
+      <tr><td><b>Consignment legs</b></td><td>Interior legs are internal transfers at a transfer price; only the final leg is a real sale</td><td><span class="tag c">decide</span> Or can goods be <em>sold to third parties mid-journey</em>?</td></tr>
+      <tr><td><b>Overhead absorption</b></td><td>Per labour-hour rate on the BOM</td><td><span class="tag w">confirm</span> Rate/hour, % of material, or actual?</td></tr>
+      <tr><td><b>Scale</b></td><td>SMB: tens of concurrent users, ≤ ~50k txns/day, single Postgres + Redis</td><td><span class="tag w">confirm</span> Rough users &amp; daily transaction volume?</td></tr>
+      <tr><td><b>Serial tracking</b></td><td>Off by default, on per item that needs it</td><td><span class="tag g">optional</span> Which items are serialized?</td></tr>
+      <tr><td><b>Deployment</b></td><td>Dev on Laragon/Windows; I'll add Postgres (Laragon add-on or Docker)</td><td><span class="tag g">optional</span> Where does production run — same box, VPS, cloud?</td></tr>
+      <tr><td><b>Fiscal year</b></td><td>Starts <b>July</b> (common in PK); 12 monthly periods</td><td><span class="tag w">confirm</span> Fiscal start month?</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="note"><span class="lbl">Next step</span><p>Approve this (or mark up the table above), and I'll begin with <strong>Phase 0 — Foundation &amp; UI shell</strong>: scaffold the Laravel + Inertia/React project, set up Postgres, tenancy, RBAC, and the app shell, then pause for your review before Phase 1 (the accounting engine). <strong>No feature code until you give the word.</strong></p></div>
+</section>
+
+</main>
+
+<footer><div class="wrap">Shuja ERP · architecture proposal · v1 for review — Laravel 13 · PostgreSQL · Inertia/React. Prepared for approval before implementation.</div></footer>
+
+<script>
+(function(){
+  var t=document.getElementById('tog');
+  function cur(){var e=document.documentElement.getAttribute('data-theme');if(e)return e;return matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';}
+  t.addEventListener('click',function(){var n=cur()==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',n);});
+})();
+</script>

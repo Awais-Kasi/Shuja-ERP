@@ -1,0 +1,13 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "shuja-erp",
+      "runtimeExecutable": "C:\\laragon\\bin\\php\\php-8.4.25-Win32-vs17-x64\\php.exe",
+      "runtimeArgs": ["artisan", "serve", "--host=127.0.0.1", "--port=8001"],
+      "port": 8001,
+      "autoPort": false,
+      "url": "http://127.0.0.1:8001"
+    }
+  ]
+}
