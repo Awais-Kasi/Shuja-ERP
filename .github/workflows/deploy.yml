@@ -1,0 +1,62 @@
+name: Deploy to production
+
+# Runs on every push to main (code OR new migrations), and can be triggered
+# by hand from the Actions tab. Assets are built here in CI — the server needs
+# no Node — then shipped over SSH, where composer + migrations + cache run.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Never let two deploys overlap.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build front-end assets
+        run: |
+          npm ci
+          npm run build
+          tar -czf build.tar.gz -C public build
+
+      - name: Copy built assets to the server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: 22
+          source: build.tar.gz
+          target: /home/makran
+
+      - name: Pull code, install deps, migrate, cache
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: 22
+          script: |
+            set -e
+            cd /home/makran/htdocs/makranindustries.com
+            git fetch origin main
+            git reset --hard origin/main
+            composer install --no-dev --optimize-autoloader --no-interaction
+            rm -rf public/build
+            tar -xzf /home/makran/build.tar.gz -C public
+            rm -f /home/makran/build.tar.gz
+            php8.4 artisan migrate --force
+            php8.4 artisan optimize:clear
+            php8.4 artisan optimize
