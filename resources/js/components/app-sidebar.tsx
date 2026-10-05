@@ -22,6 +22,7 @@ import {
     Receipt,
     ReceiptText,
     Repeat,
+    Ruler,
     Scale,
     ScrollText,
     ShieldCheck,
@@ -56,6 +57,7 @@ const navGroups: NavGroup[] = [
         label: 'Inventory',
         items: [
             { title: 'Items', href: '/inventory/items', icon: Package, permission: 'inventory.item.view' },
+            { title: 'Units', href: '/inventory/uoms', icon: Ruler, permission: 'inventory.item.view' },
             { title: 'Warehouses', href: '/inventory/warehouses', icon: Warehouse, permission: 'inventory.item.view' },
             { title: 'Stock Balance', href: '/inventory/stock-balance', icon: Boxes, permission: 'inventory.stock.view' },
             { title: 'Stock Ledger', href: '/inventory/stock-ledger', icon: ScrollText, permission: 'inventory.stock.view' },

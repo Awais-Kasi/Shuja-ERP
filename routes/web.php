@@ -26,6 +26,7 @@ use App\Http\Controllers\Manufacturing\WorkOrderController;
 use App\Http\Controllers\Inventory\StockAdjustmentController;
 use App\Http\Controllers\Inventory\StockReportController;
 use App\Http\Controllers\Inventory\StockTransferController;
+use App\Http\Controllers\Inventory\UomController;
 use App\Http\Controllers\Inventory\WarehouseController;
 use App\Http\Controllers\Purchasing\GoodsReceiptController;
 use App\Http\Controllers\Purchasing\PurchaseBillController;
@@ -97,6 +98,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::get('warehouses', [WarehouseController::class, 'index'])->middleware('can:inventory.item.view')->name('warehouses.index');
         Route::post('warehouses', [WarehouseController::class, 'store'])->middleware('can:inventory.item.manage')->name('warehouses.store');
+
+        Route::get('uoms', [UomController::class, 'index'])->middleware('can:inventory.item.view')->name('uoms.index');
+        Route::post('uoms', [UomController::class, 'store'])->middleware('can:inventory.item.manage')->name('uoms.store');
 
         Route::get('stock-balance', [StockReportController::class, 'balances'])->middleware('can:inventory.stock.view')->name('stock-balance');
         Route::get('stock-ledger', [StockReportController::class, 'ledger'])->middleware('can:inventory.stock.view')->name('stock-ledger');

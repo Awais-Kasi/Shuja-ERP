@@ -9,6 +9,7 @@ use App\Models\FiscalYear;
 use App\Models\NumberSequence;
 use App\Models\Permission;
 use App\Models\Role;
+use App\Models\Uom;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Database\Seeders\ChartOfAccountsSeeder;
@@ -27,6 +28,14 @@ class CompanyProvisioner
         'delivery' => 'DN-', 'purchase_order' => 'PO-', 'grn' => 'GRN-', 'purchase_bill' => 'BILL-',
         'purchase_return' => 'DRN-', 'payment' => 'PAY-', 'receipt' => 'RCV-', 'work_order' => 'WO-',
         'consignment' => 'CN-', 'payroll_run' => 'PR-', 'payroll_payment' => 'PP-',
+    ];
+
+    /** Standard units every new company starts with; more can be added in the UI. */
+    public const DEFAULT_UOMS = [
+        ['PCS', 'Pieces'], ['UNIT', 'Unit'], ['KG', 'Kilogram'], ['G', 'Gram'],
+        ['L', 'Litre'], ['ML', 'Millilitre'], ['M', 'Metre'], ['CM', 'Centimetre'],
+        ['BOX', 'Box'], ['CTN', 'Carton'], ['PKT', 'Packet'], ['BAG', 'Bag'],
+        ['ROLL', 'Roll'], ['DOZ', 'Dozen'], ['PAIR', 'Pair'], ['SET', 'Set'],
     ];
 
     /**
@@ -51,6 +60,7 @@ class CompanyProvisioner
                 $this->seedSequences($company);
                 $this->seedChartOfAccounts($company);
                 $this->seedCostCenters($company);
+                $this->seedUnitsOfMeasure($company);
                 $owner = $this->seedOwnerRole($company);
 
                 $creator->companies()->syncWithoutDetaching([
@@ -104,6 +114,13 @@ class CompanyProvisioner
     {
         foreach (ChartOfAccountsSeeder::COST_CENTERS as [$code, $name, $dimension]) {
             CostCenter::create(['company_id' => $company->id, 'code' => $code, 'name' => $name, 'dimension' => $dimension, 'is_active' => true]);
+        }
+    }
+
+    private function seedUnitsOfMeasure(Company $company): void
+    {
+        foreach (self::DEFAULT_UOMS as [$code, $name]) {
+            Uom::create(['company_id' => $company->id, 'code' => $code, 'name' => $name, 'is_active' => true]);
         }
     }
 
