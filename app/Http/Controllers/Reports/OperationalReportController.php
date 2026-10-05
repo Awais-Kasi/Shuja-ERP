@@ -13,6 +13,12 @@ use Inertia\Response;
 
 class OperationalReportController extends Controller
 {
+    /** The reports hub — a single page linking every report, grouped by module. */
+    public function hub(): Response
+    {
+        return Inertia::render('reports/index');
+    }
+
     public function agedReceivables(Request $request, AgingReports $reports): Response
     {
         $asOf = $request->date('as_of')?->toDateString() ?? now()->toDateString();

@@ -1,6 +1,7 @@
 import {
     ArrowLeftRight,
     Banknote,
+    BarChart3,
     BookOpen,
     BookOpenText,
     BookUser,
@@ -51,7 +52,10 @@ import type { NavGroup } from '@/types';
 const navGroups: NavGroup[] = [
     {
         label: 'Overview',
-        items: [{ title: 'Dashboard', href: '/dashboard', icon: LayoutGrid, permission: 'dashboard.view' }],
+        items: [
+            { title: 'Dashboard', href: '/dashboard', icon: LayoutGrid, permission: 'dashboard.view' },
+            { title: 'Reports', href: '/reports', icon: BarChart3, permission: 'dashboard.view' },
+        ],
     },
     {
         label: 'Inventory',
@@ -77,6 +81,7 @@ const navGroups: NavGroup[] = [
             { title: 'Supplier Payments', href: '/purchase/payments', icon: Banknote, permission: 'purchase.payment.manage' },
             { title: 'Purchase Returns', href: '/purchase/returns', icon: Undo2, permission: 'purchase.return.create' },
             { title: 'Supplier Ledger', href: '/purchase/supplier-ledger', icon: BookUser, permission: 'purchase.order.manage' },
+            { title: 'Purchase Register', href: '/purchase/purchase-register', icon: ClipboardList, permission: 'purchase.order.manage' },
         ],
     },
     {
@@ -88,6 +93,7 @@ const navGroups: NavGroup[] = [
             { title: 'Customer Receipts', href: '/sales/receipts', icon: HandCoins, permission: 'sales.receipt.manage' },
             { title: 'Sales Returns', href: '/sales/returns', icon: Undo2, permission: 'sales.return.create' },
             { title: 'Customer Ledger', href: '/sales/customer-ledger', icon: BookOpen, permission: 'sales.order.manage' },
+            { title: 'Sales Register', href: '/sales/sales-register', icon: ClipboardList, permission: 'sales.order.manage' },
         ],
     },
     {

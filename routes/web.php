@@ -138,6 +138,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('bills/{bill}', [PurchaseBillController::class, 'show'])->middleware('can:purchase.bill.post')->name('bills.show');
 
         Route::get('supplier-ledger', [PurchaseReportController::class, 'supplierLedger'])->middleware('can:purchase.order.manage')->name('supplier-ledger');
+        Route::get('purchase-register', [PurchaseReportController::class, 'register'])->middleware('can:purchase.order.manage')->name('purchase-register');
 
         // Purchase returns (debit notes)
         Route::get('returns', [\App\Http\Controllers\Purchasing\PurchaseReturnController::class, 'index'])->middleware('can:purchase.return.create')->name('returns.index');
@@ -171,6 +172,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('invoices/{invoice}/print', [SalesInvoiceController::class, 'print'])->middleware('can:sales.invoice.post')->name('invoices.print');
 
         Route::get('customer-ledger', [SalesReportController::class, 'customerLedger'])->middleware('can:sales.order.manage')->name('customer-ledger');
+        Route::get('sales-register', [SalesReportController::class, 'register'])->middleware('can:sales.order.manage')->name('sales-register');
 
         // Sales returns (credit notes)
         Route::get('returns', [\App\Http\Controllers\Sales\SalesReturnController::class, 'index'])->middleware('can:sales.return.create')->name('returns.index');
@@ -257,6 +259,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Operational reports — aging & inventory
     Route::prefix('reports')->name('reports.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Reports\OperationalReportController::class, 'hub'])->middleware('can:dashboard.view')->name('hub');
         Route::get('aged-receivables', [\App\Http\Controllers\Reports\OperationalReportController::class, 'agedReceivables'])->middleware('can:accounting.report.view')->name('aged-receivables');
         Route::get('aged-payables', [\App\Http\Controllers\Reports\OperationalReportController::class, 'agedPayables'])->middleware('can:accounting.report.view')->name('aged-payables');
         Route::get('inventory-valuation', [\App\Http\Controllers\Reports\OperationalReportController::class, 'inventoryValuation'])->middleware('can:inventory.valuation.view')->name('inventory-valuation');
