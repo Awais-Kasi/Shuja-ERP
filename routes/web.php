@@ -43,6 +43,23 @@ use Illuminate\Support\Facades\Route;
 // The app opens on the login page (or the dashboard when already signed in).
 Route::get('/', fn () => redirect()->route(Auth::check() ? 'dashboard' : 'login'))->name('home');
 
+// Public version check — open /version to confirm exactly what the live server runs.
+Route::get('version', function () {
+    $stamp = [];
+    $path = storage_path('app/version.json');
+    if (is_file($path)) {
+        $stamp = json_decode((string) file_get_contents($path), true) ?: [];
+    }
+
+    return response()->json([
+        'app' => config('app.name'),
+        'version' => config('version.number'),
+        'released_on' => config('version.released_on'),
+        'commit' => $stamp['commit'] ?? null,
+        'deployed_at' => $stamp['deployed_at'] ?? null,
+    ]);
+})->name('version');
+
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 

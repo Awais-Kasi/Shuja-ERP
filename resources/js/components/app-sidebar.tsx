@@ -37,6 +37,7 @@ import {
     Wallet,
     Warehouse,
 } from 'lucide-react';
+import { usePage } from '@inertiajs/react';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import { CompanySwitcher } from '@/components/company-switcher';
@@ -153,6 +154,7 @@ const navGroups: NavGroup[] = [
 
 export function AppSidebar() {
     const { can } = usePermissions();
+    const version = (usePage().props as { version?: string }).version;
 
     return (
         <Sidebar collapsible="icon" variant="inset">
@@ -172,6 +174,16 @@ export function AppSidebar() {
 
             <SidebarFooter>
                 <NavUser />
+                {version && (
+                    <a
+                        href="/version"
+                        target="_blank"
+                        rel="noopener"
+                        className="text-muted-foreground/70 hover:text-muted-foreground px-2 pb-1 text-center text-[10px] tracking-wide group-data-[collapsible=icon]:hidden"
+                    >
+                        Shuja ERP v{version}
+                    </a>
+                )}
             </SidebarFooter>
         </Sidebar>
     );

@@ -69,6 +69,8 @@ jobs:
             cd /home/makran/htdocs/makranindustries.com
             git fetch origin main
             git reset --hard origin/main
+            mkdir -p storage/app
+            printf '{"commit":"%s","deployed_at":"%s"}' "$(git rev-parse --short HEAD)" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > storage/app/version.json
             composer install --no-dev --optimize-autoloader --no-interaction
             rm -rf public/build
             tar -xzf /home/makran/build.tar.gz -C public
