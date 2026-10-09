@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # The Wayfinder Vite plugin runs `php artisan wayfinder:generate` during the
       # build, so CI needs PHP + vendor + a bootable .env to compile the assets.
@@ -37,7 +37,7 @@ jobs:
           php artisan key:generate
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '22'
 
@@ -48,7 +48,7 @@ jobs:
           tar -czf build.tar.gz -C public build
 
       - name: Copy built assets to the server
-        uses: appleboy/scp-action@v0.1.7
+        uses: appleboy/scp-action@v1.0.0
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
@@ -58,7 +58,7 @@ jobs:
           target: /home/makran
 
       - name: Pull code, install deps, migrate, cache
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@v1.2.5
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
