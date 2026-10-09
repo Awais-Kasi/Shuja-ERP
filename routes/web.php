@@ -19,6 +19,7 @@ use App\Http\Controllers\Consignment\ConsignmentDispatchController;
 use App\Http\Controllers\Consignment\ConsignmentExpenseController;
 use App\Http\Controllers\Consignment\ConsignmentReportController;
 use App\Http\Controllers\Consignment\ConsignmentSettlementController;
+use App\Http\Controllers\Consignment\ConsignmentTripController;
 use App\Http\Controllers\Inventory\ItemController;
 use App\Http\Controllers\Payments\PaymentController;
 use App\Http\Controllers\Manufacturing\BomController;
@@ -241,6 +242,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('settlements/{settlement}/reverse', [ConsignmentSettlementController::class, 'reverse'])->middleware('can:consignment.settle')->name('settlements.reverse');
 
         Route::get('stock', [ConsignmentReportController::class, 'stock'])->middleware('can:consignment.manage')->name('stock');
+
+        // Consignment Trips — landed-cost journeys with per-leg truck tracking + P&L.
+        Route::get('trips', [ConsignmentTripController::class, 'index'])->middleware('can:consignment.manage')->name('trips.index');
+        Route::get('trips/create', [ConsignmentTripController::class, 'create'])->middleware('can:consignment.manage')->name('trips.create');
+        Route::post('trips', [ConsignmentTripController::class, 'store'])->middleware('can:consignment.manage')->name('trips.store');
+        Route::get('trips/{trip}', [ConsignmentTripController::class, 'show'])->middleware('can:consignment.manage')->name('trips.show');
+        Route::post('trips/{trip}/post', [ConsignmentTripController::class, 'post'])->middleware('can:consignment.manage')->name('trips.post');
+        Route::post('trips/{trip}/settle', [ConsignmentTripController::class, 'settle'])->middleware('can:consignment.settle')->name('trips.settle');
     });
 
     // Fixed Assets & Depreciation

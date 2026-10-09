@@ -23,6 +23,7 @@ import {
     Receipt,
     ReceiptText,
     Repeat,
+    Route,
     Ruler,
     Scale,
     ScrollText,
@@ -107,6 +108,7 @@ const navGroups: NavGroup[] = [
     {
         label: 'Consignment',
         items: [
+            { title: 'Trips (Landed Cost)', href: '/consignment/trips', icon: Route, permission: 'consignment.manage' },
             { title: 'Dispatches', href: '/consignment/dispatches', icon: Truck, permission: 'consignment.manage' },
             { title: 'Settlements', href: '/consignment/settlements', icon: HandCoins, permission: 'consignment.settle' },
             { title: 'Consignment Stock', href: '/consignment/stock', icon: Boxes, permission: 'consignment.manage' },
