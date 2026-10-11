@@ -49,7 +49,8 @@ export default function CreateReceipt({
         form.transform((data) => ({
             ...data,
             lines: data.lines.map((l) => ({ ...l, purchase_order_line_id: l.purchase_order_line_id || null })),
-        })).post('/purchase/receipts');
+        }));
+        form.post('/purchase/receipts');
     };
 
     return (
