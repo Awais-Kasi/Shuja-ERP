@@ -39,8 +39,9 @@ class ItemController extends Controller
         return Inertia::render('inventory/items', [
             'items' => $items,
             'uoms' => Uom::where('is_active', true)->orderBy('code')->get(['id', 'code', 'name']),
-            'accounts' => Account::where('is_group', false)->where('type', 'asset')->orderBy('code')
-                ->get(['id', 'code', 'name'])->map(fn ($a) => ['id' => $a->id, 'label' => $a->code.' — '.$a->name]),
+            'accounts' => Account::where('is_group', false)->where('is_active', true)->orderBy('code')
+                ->get(['id', 'code', 'name', 'type'])
+                ->map(fn ($a) => ['id' => $a->id, 'label' => $a->code.' — '.$a->name, 'type' => $a->type]),
             'defaultValuation' => $tenant->get()?->default_valuation_method,
         ]);
     }
@@ -54,7 +55,16 @@ class ItemController extends Controller
             'uom_id' => ['nullable', 'integer', Rule::exists('uoms', 'id')->where('company_id', $tenant->id())],
             'valuation_method' => ['nullable', Rule::in(['fifo', 'weighted_average'])],
             'inventory_account_id' => ['nullable', 'integer', Rule::exists('accounts', 'id')->where('company_id', $tenant->id())],
+            'income_account_id' => ['nullable', 'integer', Rule::exists('accounts', 'id')->where('company_id', $tenant->id())],
+            'cogs_account_id' => ['nullable', 'integer', Rule::exists('accounts', 'id')->where('company_id', $tenant->id())],
         ]);
+
+        // Derive usability flags from the item type so the new item shows up in the
+        // right screens: everything but a service tracks stock, and items are both
+        // purchasable and sellable by default.
+        $validated['tracks_inventory'] = $validated['type'] !== 'service';
+        $validated['is_purchasable'] = true;
+        $validated['is_sellable'] = true;
 
         Item::create($validated);
 

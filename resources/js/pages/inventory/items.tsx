@@ -37,6 +37,7 @@ type ItemRow = {
 };
 
 type Option = { id: number; label?: string; code?: string; name?: string };
+type AccountOption = { id: number; label: string; type: string };
 
 const TYPES = ['stock', 'raw_material', 'finished_good', 'consumable', 'service'];
 
@@ -48,11 +49,15 @@ export default function Items({
 }: {
     items: ItemRow[];
     uoms: Option[];
-    accounts: Option[];
+    accounts: AccountOption[];
     defaultValuation: string;
 }) {
     const { can } = usePermissions();
     const [open, setOpen] = useState(false);
+
+    const assetAccounts = accounts.filter((a) => a.type === 'asset');
+    const incomeAccounts = accounts.filter((a) => a.type === 'income');
+    const expenseAccounts = accounts.filter((a) => a.type === 'expense');
 
     const form = useForm({
         code: '',
@@ -61,7 +66,11 @@ export default function Items({
         uom_id: '' as string,
         valuation_method: '' as string,
         inventory_account_id: '' as string,
+        income_account_id: '' as string,
+        cogs_account_id: '' as string,
     });
+    // Sales accounts only matter for items you sell (finished goods, stock, etc.).
+    const sellable = form.data.type !== 'raw_material';
 
     const submit = (e: FormEvent) => {
         e.preventDefault();
@@ -144,11 +153,33 @@ export default function Items({
                                                 <Select value={form.data.inventory_account_id} onValueChange={(v) => form.setData('inventory_account_id', v)}>
                                                     <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
                                                     <SelectContent>
-                                                        {accounts.map((a) => <SelectItem key={a.id} value={String(a.id)}>{a.label}</SelectItem>)}
+                                                        {assetAccounts.map((a) => <SelectItem key={a.id} value={String(a.id)}>{a.label}</SelectItem>)}
                                                     </SelectContent>
                                                 </Select>
                                             </div>
                                         </div>
+                                        {sellable && (
+                                            <div className="grid grid-cols-2 gap-3">
+                                                <div className="grid gap-1.5">
+                                                    <Label>Income account <span className="text-muted-foreground font-normal">(for sales)</span></Label>
+                                                    <Select value={form.data.income_account_id} onValueChange={(v) => form.setData('income_account_id', v)}>
+                                                        <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
+                                                        <SelectContent>
+                                                            {incomeAccounts.map((a) => <SelectItem key={a.id} value={String(a.id)}>{a.label}</SelectItem>)}
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+                                                <div className="grid gap-1.5">
+                                                    <Label>COGS account <span className="text-muted-foreground font-normal">(for sales)</span></Label>
+                                                    <Select value={form.data.cogs_account_id} onValueChange={(v) => form.setData('cogs_account_id', v)}>
+                                                        <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
+                                                        <SelectContent>
+                                                            {expenseAccounts.map((a) => <SelectItem key={a.id} value={String(a.id)}>{a.label}</SelectItem>)}
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                     <DialogFooter>
                                         <Button type="submit" disabled={form.processing}>Create item</Button>
