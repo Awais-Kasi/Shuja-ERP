@@ -41,7 +41,7 @@ class ItemController extends Controller
             'uoms' => Uom::where('is_active', true)->orderBy('code')->get(['id', 'code', 'name']),
             'accounts' => Account::where('is_group', false)->where('is_active', true)->orderBy('code')
                 ->get(['id', 'code', 'name', 'type'])
-                ->map(fn ($a) => ['id' => $a->id, 'label' => $a->code.' — '.$a->name, 'type' => $a->type]),
+                ->map(fn ($a) => ['id' => $a->id, 'code' => $a->code, 'label' => $a->code.' — '.$a->name, 'type' => $a->type]),
             'defaultValuation' => $tenant->get()?->default_valuation_method,
         ]);
     }
