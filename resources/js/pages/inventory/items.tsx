@@ -105,7 +105,7 @@ export default function Items({
                                     </DialogHeader>
                                     <div className="grid gap-4 py-4">
                                         <div className="grid grid-cols-3 gap-3">
-                                            <div className="grid gap-1.5">
+                                            <div className="grid min-w-0 gap-1.5">
                                                 <Label htmlFor="code">Code</Label>
                                                 <Input id="code" value={form.data.code} onChange={(e) => form.setData('code', e.target.value)} />
                                                 {form.errors.code && <p className="text-destructive text-xs">{form.errors.code}</p>}
@@ -117,19 +117,19 @@ export default function Items({
                                             </div>
                                         </div>
                                         <div className="grid grid-cols-2 gap-3">
-                                            <div className="grid gap-1.5">
+                                            <div className="grid min-w-0 gap-1.5">
                                                 <Label>Type</Label>
                                                 <Select value={form.data.type} onValueChange={(v) => form.setData('type', v)}>
-                                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                                    <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
                                                     <SelectContent>
                                                         {TYPES.map((t) => <SelectItem key={t} value={t} className="capitalize">{t.replace('_', ' ')}</SelectItem>)}
                                                     </SelectContent>
                                                 </Select>
                                             </div>
-                                            <div className="grid gap-1.5">
+                                            <div className="grid min-w-0 gap-1.5">
                                                 <Label>Unit</Label>
                                                 <Select value={form.data.uom_id} onValueChange={(v) => form.setData('uom_id', v)}>
-                                                    <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
+                                                    <SelectTrigger className="w-full"><SelectValue placeholder="—" /></SelectTrigger>
                                                     <SelectContent>
                                                         {uoms.map((u) => <SelectItem key={u.id} value={String(u.id)}>{u.code} — {u.name}</SelectItem>)}
                                                     </SelectContent>
@@ -137,10 +137,10 @@ export default function Items({
                                             </div>
                                         </div>
                                         <div className="grid grid-cols-2 gap-3">
-                                            <div className="grid gap-1.5">
+                                            <div className="grid min-w-0 gap-1.5">
                                                 <Label>Valuation</Label>
                                                 <Select value={form.data.valuation_method} onValueChange={(v) => form.setData('valuation_method', v === 'default' ? '' : v)}>
-                                                    <SelectTrigger><SelectValue placeholder={`Company default (${defaultValuation})`} /></SelectTrigger>
+                                                    <SelectTrigger className="w-full"><SelectValue placeholder="Company default" /></SelectTrigger>
                                                     <SelectContent>
                                                         <SelectItem value="default">Company default</SelectItem>
                                                         <SelectItem value="weighted_average">Weighted Average</SelectItem>
@@ -148,10 +148,10 @@ export default function Items({
                                                     </SelectContent>
                                                 </Select>
                                             </div>
-                                            <div className="grid gap-1.5">
+                                            <div className="grid min-w-0 gap-1.5">
                                                 <Label>Inventory account</Label>
                                                 <Select value={form.data.inventory_account_id} onValueChange={(v) => form.setData('inventory_account_id', v)}>
-                                                    <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
+                                                    <SelectTrigger className="w-full"><SelectValue placeholder="—" /></SelectTrigger>
                                                     <SelectContent>
                                                         {assetAccounts.map((a) => <SelectItem key={a.id} value={String(a.id)}>{a.label}</SelectItem>)}
                                                     </SelectContent>
@@ -160,19 +160,19 @@ export default function Items({
                                         </div>
                                         {sellable && (
                                             <div className="grid grid-cols-2 gap-3">
-                                                <div className="grid gap-1.5">
+                                                <div className="grid min-w-0 gap-1.5">
                                                     <Label>Income account <span className="text-muted-foreground font-normal">(for sales)</span></Label>
                                                     <Select value={form.data.income_account_id} onValueChange={(v) => form.setData('income_account_id', v)}>
-                                                        <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
+                                                        <SelectTrigger className="w-full"><SelectValue placeholder="—" /></SelectTrigger>
                                                         <SelectContent>
                                                             {incomeAccounts.map((a) => <SelectItem key={a.id} value={String(a.id)}>{a.label}</SelectItem>)}
                                                         </SelectContent>
                                                     </Select>
                                                 </div>
-                                                <div className="grid gap-1.5">
+                                                <div className="grid min-w-0 gap-1.5">
                                                     <Label>COGS account <span className="text-muted-foreground font-normal">(for sales)</span></Label>
                                                     <Select value={form.data.cogs_account_id} onValueChange={(v) => form.setData('cogs_account_id', v)}>
-                                                        <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
+                                                        <SelectTrigger className="w-full"><SelectValue placeholder="—" /></SelectTrigger>
                                                         <SelectContent>
                                                             {expenseAccounts.map((a) => <SelectItem key={a.id} value={String(a.id)}>{a.label}</SelectItem>)}
                                                         </SelectContent>
