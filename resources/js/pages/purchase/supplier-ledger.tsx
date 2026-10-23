@@ -6,10 +6,10 @@ type Row = { id: number; code: string; name: string; payable: number };
 export default function SupplierLedger({ rows, total }: { rows: Row[]; total: number }) {
     return (
         <>
-            <Head title="Supplier Ledger" />
+            <Head title="Supplier Khata" />
             <div className="flex h-full flex-1 flex-col gap-6 p-4 md:p-6">
                 <div>
-                    <h1 className="text-2xl font-semibold tracking-tight">Supplier Ledger</h1>
+                    <h1 className="text-2xl font-semibold tracking-tight">Supplier Khata</h1>
                     <p className="text-muted-foreground text-sm">Money you owe, by supplier — click a supplier to see their full statement.</p>
                 </div>
                 <div className="overflow-x-auto rounded-xl border">

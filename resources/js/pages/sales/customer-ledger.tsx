@@ -6,10 +6,10 @@ type Row = { id: number; code: string; name: string; receivable: number };
 export default function CustomerLedger({ rows, total }: { rows: Row[]; total: number }) {
     return (
         <>
-            <Head title="Customer Ledger" />
+            <Head title="Customer Khata" />
             <div className="flex h-full flex-1 flex-col gap-6 p-4 md:p-6">
                 <div>
-                    <h1 className="text-2xl font-semibold tracking-tight">Customer Ledger</h1>
+                    <h1 className="text-2xl font-semibold tracking-tight">Customer Khata</h1>
                     <p className="text-muted-foreground text-sm">Money owed to you, by customer — click a customer to see their full statement.</p>
                 </div>
                 <div className="overflow-x-auto rounded-xl border">
