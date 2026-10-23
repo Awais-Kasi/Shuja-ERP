@@ -69,4 +69,61 @@ class SalesReportController extends Controller
             'total' => round($rows->sum('receivable'), 2),
         ]);
     }
+
+    /** Full account statement (khata) for one customer: every receivable movement with a running balance. */
+    public function customerStatement(Customer $customer, Request $request, TenantManager $tenant): Response
+    {
+        $from = $request->date('from')?->toDateString();
+        $to = $request->date('to')?->toDateString();
+
+        $base = fn () => DB::table('journal_lines as l')
+            ->join('journals as j', 'j.id', '=', 'l.journal_id')
+            ->join('accounts as a', 'a.id', '=', 'l.account_id')
+            ->where('a.control_type', 'ar')
+            ->where('l.party_type', (new Customer)->getMorphClass())
+            ->where('l.party_id', $customer->id)
+            ->where('j.status', 'posted')
+            ->where('j.company_id', $tenant->id());
+
+        $opening = $from
+            ? round((float) $base()->whereDate('j.entry_date', '<', $from)->sum(DB::raw('l.base_debit - l.base_credit')), 2)
+            : 0.0;
+
+        $q = $base();
+        if ($from) {
+            $q->whereDate('j.entry_date', '>=', $from);
+        }
+        if ($to) {
+            $q->whereDate('j.entry_date', '<=', $to);
+        }
+        $lines = $q->orderBy('j.entry_date')->orderBy('j.id')
+            ->select('j.id as journal_id', 'j.entry_date', 'j.number', 'j.reference', 'j.type', 'l.description', 'l.base_debit', 'l.base_credit')
+            ->get();
+
+        $running = $opening;
+        $rows = $lines->map(function ($l) use (&$running) {
+            $running = round($running + (float) $l->base_debit - (float) $l->base_credit, 2);
+
+            return [
+                'date' => $l->entry_date,
+                'journal_id' => $l->journal_id,
+                'voucher' => $l->number ?: $l->reference,
+                'detail' => $l->description ?: ucfirst((string) $l->type),
+                'debit' => round((float) $l->base_debit, 2),
+                'credit' => round((float) $l->base_credit, 2),
+                'balance' => $running,
+            ];
+        });
+
+        return Inertia::render('sales/customer-statement', [
+            'party' => ['id' => $customer->id, 'code' => $customer->code, 'name' => $customer->name],
+            'opening' => $opening,
+            'rows' => $rows,
+            'closing' => $running,
+            'totalDebit' => round((float) $lines->sum('base_debit'), 2),
+            'totalCredit' => round((float) $lines->sum('base_credit'), 2),
+            'from' => $from,
+            'to' => $to,
+        ]);
+    }
 }

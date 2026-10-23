@@ -156,6 +156,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('bills/{bill}', [PurchaseBillController::class, 'show'])->middleware('can:purchase.bill.post')->name('bills.show');
 
         Route::get('supplier-ledger', [PurchaseReportController::class, 'supplierLedger'])->middleware('can:purchase.order.manage')->name('supplier-ledger');
+        Route::get('supplier-ledger/{supplier}', [PurchaseReportController::class, 'supplierStatement'])->middleware('can:purchase.order.manage')->name('supplier-statement');
         Route::get('purchase-register', [PurchaseReportController::class, 'register'])->middleware('can:purchase.order.manage')->name('purchase-register');
 
         // Purchase returns (debit notes)
@@ -190,6 +191,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('invoices/{invoice}/print', [SalesInvoiceController::class, 'print'])->middleware('can:sales.invoice.post')->name('invoices.print');
 
         Route::get('customer-ledger', [SalesReportController::class, 'customerLedger'])->middleware('can:sales.order.manage')->name('customer-ledger');
+        Route::get('customer-ledger/{customer}', [SalesReportController::class, 'customerStatement'])->middleware('can:sales.order.manage')->name('customer-statement');
         Route::get('sales-register', [SalesReportController::class, 'register'])->middleware('can:sales.order.manage')->name('sales-register');
 
         // Sales returns (credit notes)

@@ -1,4 +1,4 @@
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import { money } from '@/lib/format';
 
 type Row = { id: number; code: string; name: string; payable: number };
@@ -10,7 +10,7 @@ export default function SupplierLedger({ rows, total }: { rows: Row[]; total: nu
             <div className="flex h-full flex-1 flex-col gap-6 p-4 md:p-6">
                 <div>
                     <h1 className="text-2xl font-semibold tracking-tight">Supplier Ledger</h1>
-                    <p className="text-muted-foreground text-sm">Accounts payable by supplier</p>
+                    <p className="text-muted-foreground text-sm">Money you owe, by supplier — click a supplier to see their full statement.</p>
                 </div>
                 <div className="overflow-x-auto rounded-xl border">
                     <table className="w-full text-sm">
@@ -24,7 +24,7 @@ export default function SupplierLedger({ rows, total }: { rows: Row[]; total: nu
                         <tbody className="divide-y">
                             {rows.length === 0 && <tr><td colSpan={3} className="text-muted-foreground px-4 py-10 text-center">No outstanding payables.</td></tr>}
                             {rows.map((r) => (
-                                <tr key={r.id} className="hover:bg-muted/40">
+                                <tr key={r.id} onClick={() => router.visit(`/purchase/supplier-ledger/${r.id}`)} className="hover:bg-muted/40 cursor-pointer">
                                     <td className="px-4 py-2.5 font-mono text-xs">{r.code}</td>
                                     <td className="px-4 py-2.5">{r.name}</td>
                                     <td className="px-4 py-2.5 text-right font-mono tabular-nums">{money(r.payable)}</td>
