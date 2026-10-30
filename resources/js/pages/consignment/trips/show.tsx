@@ -1,5 +1,5 @@
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
-import { ArrowLeft, HandCoins, PlayCircle, Route, TrendingDown, TrendingUp } from 'lucide-react';
+import { ArrowLeft, HandCoins, PlayCircle, Plus, Route, Trash2, TrendingDown, TrendingUp } from 'lucide-react';
 import { type FormEvent, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -24,7 +24,10 @@ type Trip = {
     goods_rate: number; goods_cost: number; logistics_cost: number; total_cost: number; cost_per_unit: number;
     sale_amount: number | null; cogs_total: number | null; profit: number | null; status: string; memo: string | null;
     journal_id: number | null; settlement_journal_id: number | null; can_post: boolean; can_settle: boolean; steps: Step[];
+    sales: { customer: string; quantity: number; amount: number; cost: number; profit: number }[];
 };
+type SaleLine = { customer_id: string; quantity: string; amount: string };
+const emptySaleLine = (): SaleLine => ({ customer_id: '', quantity: '', amount: '' });
 
 const basisLabel: Record<string, string> = { per_bag: 'per bag', per_kg: 'per kg/unit', flat: 'flat' };
 const statusStyle: Record<string, string> = {
@@ -38,9 +41,13 @@ export default function ShowTrip({ trip, customers, accounts }: { trip: Trip; cu
     const { errors } = usePage().props as { errors: Record<string, string> };
     const [settleOpen, setSettleOpen] = useState(false);
 
-    const settleForm = useForm<{ sale_amount: string; customer_id: string; sale_account_id: string; settlement_date: string }>({
-        sale_amount: '', customer_id: '', sale_account_id: '', settlement_date: trip.date,
+    const settleForm = useForm<{ settlement_date: string; lines: SaleLine[] }>({
+        settlement_date: trip.date,
+        lines: [{ customer_id: '', quantity: String(trip.quantity), amount: '' }],
     });
+    const sLines = settleForm.data.lines;
+    const setSLines = (n: SaleLine[]) => settleForm.setData('lines', n);
+    const updS = (i: number, f: keyof SaleLine, v: string) => setSLines(sLines.map((l, idx) => (idx === i ? { ...l, [f]: v } : l)));
 
     const post = () => {
         if (confirm('Post this trip? Every leg cost will be capitalised onto the goods (landed costing).')) {
@@ -52,7 +59,10 @@ export default function ShowTrip({ trip, customers, accounts }: { trip: Trip; cu
         settleForm.post(`/consignment/trips/${trip.id}/settle`, { onSuccess: () => setSettleOpen(false) });
     };
 
-    const projectedProfit = (parseFloat(settleForm.data.sale_amount) || 0) - trip.total_cost;
+    const soldQty = sLines.reduce((s, l) => s + (parseFloat(l.quantity) || 0), 0);
+    const totalSale = sLines.reduce((s, l) => s + (parseFloat(l.amount) || 0), 0);
+    const projectedProfit = totalSale - trip.cost_per_unit * soldQty;
+    const overSold = soldQty > trip.quantity + 0.0001;
 
     return (
         <>
@@ -80,40 +90,53 @@ export default function ShowTrip({ trip, customers, accounts }: { trip: Trip; cu
                         {trip.can_settle && can('consignment.settle') && (
                             <Dialog open={settleOpen} onOpenChange={setSettleOpen}>
                                 <DialogTrigger asChild><Button><HandCoins className="size-4" /> Settle (sell)</Button></DialogTrigger>
-                                <DialogContent>
+                                <DialogContent className="sm:max-w-2xl">
                                     <form onSubmit={submitSettle}>
-                                        <DialogHeader><DialogTitle>Settle trip {trip.number}</DialogTitle></DialogHeader>
+                                        <DialogHeader><DialogTitle>Settle trip {trip.number} — sell to customers</DialogTitle></DialogHeader>
                                         <div className="grid gap-4 py-4">
-                                            <div className="grid gap-1.5">
-                                                <Label htmlFor="sale">Total sale amount</Label>
-                                                <Input id="sale" inputMode="decimal" className="text-right font-mono" value={settleForm.data.sale_amount} onChange={(e) => settleForm.setData('sale_amount', e.target.value)} placeholder="0" autoFocus />
-                                                {settleForm.errors.sale_amount && <p className="text-destructive text-xs">{settleForm.errors.sale_amount}</p>}
-                                            </div>
-                                            <div className="grid gap-1.5">
-                                                <Label>Customer</Label>
-                                                <Select value={settleForm.data.customer_id} onValueChange={(v) => settleForm.setData('customer_id', v)}>
-                                                    <SelectTrigger><SelectValue placeholder="Optional" /></SelectTrigger>
-                                                    <SelectContent>{customers.map((c) => <SelectItem key={c.id} value={String(c.id)}>{c.code} — {c.name}</SelectItem>)}</SelectContent>
-                                                </Select>
-                                            </div>
-                                            <div className="grid gap-1.5">
-                                                <Label>Receive into / debit</Label>
-                                                <Select value={settleForm.data.sale_account_id} onValueChange={(v) => settleForm.setData('sale_account_id', v)}>
-                                                    <SelectTrigger><SelectValue placeholder="Defaults to Accounts Receivable" /></SelectTrigger>
-                                                    <SelectContent>{accounts.map((a) => <SelectItem key={a.id} value={String(a.id)}><span className="font-mono text-xs">{a.code}</span> {a.name}</SelectItem>)}</SelectContent>
-                                                </Select>
-                                            </div>
-                                            <div className="grid gap-1.5">
+                                            <div className="grid w-44 gap-1.5">
                                                 <Label htmlFor="sdate">Sale date</Label>
                                                 <Input id="sdate" type="date" value={settleForm.data.settlement_date} onChange={(e) => settleForm.setData('settlement_date', e.target.value)} />
                                             </div>
-                                            <div className="bg-muted/40 flex items-center justify-between rounded-lg px-3 py-2 text-sm">
-                                                <span className="text-muted-foreground">Landed cost {money(trip.total_cost)} → projected {projectedProfit >= 0 ? 'profit' : 'loss'}</span>
-                                                <span className={`font-mono font-semibold tabular-nums ${projectedProfit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>{money(projectedProfit)}</span>
+                                            <p className="text-muted-foreground text-xs">Add each customer you are selling to — their quantity and sale amount. Each customer's receivable (khata) is updated automatically.</p>
+                                            <div className="overflow-x-auto rounded-lg border">
+                                                <table className="w-full min-w-[460px] text-sm">
+                                                    <thead className="bg-muted/50 text-muted-foreground">
+                                                        <tr className="[&>th]:px-2.5 [&>th]:py-2 [&>th]:text-left [&>th]:font-medium">
+                                                            <th>Customer</th>
+                                                            <th className="w-24 text-right">Qty</th>
+                                                            <th className="w-32 text-right">Sale amount</th>
+                                                            <th className="w-8"></th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody className="divide-y">
+                                                        {sLines.map((l, i) => (
+                                                            <tr key={i} className="[&>td]:px-2.5 [&>td]:py-1.5 align-top">
+                                                                <td>
+                                                                    <Select value={l.customer_id} onValueChange={(v) => updS(i, 'customer_id', v)}>
+                                                                        <SelectTrigger className="w-full"><SelectValue placeholder="Select customer" /></SelectTrigger>
+                                                                        <SelectContent>{customers.map((c) => <SelectItem key={c.id} value={String(c.id)}>{c.code} — {c.name}</SelectItem>)}</SelectContent>
+                                                                    </Select>
+                                                                </td>
+                                                                <td><Input inputMode="decimal" className="text-right font-mono" value={l.quantity} onChange={(e) => updS(i, 'quantity', e.target.value)} placeholder="0" /></td>
+                                                                <td><Input inputMode="decimal" className="text-right font-mono" value={l.amount} onChange={(e) => updS(i, 'amount', e.target.value)} placeholder="0" /></td>
+                                                                <td className="text-center">{sLines.length > 1 && <Button type="button" variant="ghost" size="icon" onClick={() => setSLines(sLines.filter((_, idx) => idx !== i))}><Trash2 className="text-muted-foreground size-4" /></Button>}</td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
                                             </div>
+                                            <Button type="button" variant="outline" size="sm" className="w-fit" onClick={() => setSLines([...sLines, emptySaleLine()])}><Plus className="size-4" /> Add customer</Button>
+
+                                            <div className="bg-muted/40 grid gap-1 rounded-lg px-3 py-2 text-sm">
+                                                <div className="flex justify-between"><span className="text-muted-foreground">Quantity sold</span><span className={`font-mono tabular-nums ${overSold ? 'text-rose-600 dark:text-rose-400' : ''}`}>{money(soldQty)} / {money(trip.quantity)}</span></div>
+                                                <div className="flex justify-between"><span className="text-muted-foreground">Total sale</span><span className="font-mono tabular-nums">{money(totalSale)}</span></div>
+                                                <div className="flex justify-between font-semibold"><span>Projected {projectedProfit >= 0 ? 'profit' : 'loss'}</span><span className={`font-mono tabular-nums ${projectedProfit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>{money(projectedProfit)}</span></div>
+                                            </div>
+                                            {overSold && <p className="text-destructive text-xs">You are selling more than the trip holds ({money(trip.quantity)}). Reduce the quantities.</p>}
                                         </div>
                                         {errors.settlement && <div className="border-destructive/40 bg-destructive/10 text-destructive mb-2 rounded-md border px-3 py-2 text-sm">{errors.settlement}</div>}
-                                        <DialogFooter><Button type="submit" disabled={settleForm.processing}>Record sale & profit</Button></DialogFooter>
+                                        <DialogFooter><Button type="submit" disabled={settleForm.processing || overSold}>Record sale &amp; profit</Button></DialogFooter>
                                     </form>
                                 </DialogContent>
                             </Dialog>
@@ -139,6 +162,38 @@ export default function ShowTrip({ trip, customers, accounts }: { trip: Trip; cu
                             <div><div className="text-muted-foreground text-xs uppercase">Landed cost (COGS)</div><div className="font-mono tabular-nums">{money(trip.cogs_total ?? 0)}</div></div>
                             <div><div className="text-muted-foreground text-xs uppercase">Margin</div><div className="font-mono tabular-nums">{trip.sale_amount ? ((trip.profit / trip.sale_amount) * 100).toFixed(1) : '0.0'}%</div></div>
                         </div>
+                    </div>
+                )}
+
+                {/* Sold-to breakdown (per customer) */}
+                {trip.status === 'settled' && trip.sales.length > 0 && (
+                    <div>
+                        <h2 className="text-muted-foreground mb-2 text-sm font-semibold uppercase tracking-wide">Sold to ({trip.sales.length} {trip.sales.length === 1 ? 'customer' : 'customers'})</h2>
+                        <div className="overflow-x-auto rounded-xl border">
+                            <table className="w-full min-w-[520px] text-sm">
+                                <thead className="bg-muted/50 text-muted-foreground">
+                                    <tr className="[&>th]:px-4 [&>th]:py-2.5 [&>th]:font-medium">
+                                        <th className="text-left">Customer</th>
+                                        <th className="w-24 text-right">Qty</th>
+                                        <th className="w-32 text-right">Sale</th>
+                                        <th className="w-32 text-right">Cost</th>
+                                        <th className="w-32 text-right">Profit/Loss</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y">
+                                    {trip.sales.map((s, i) => (
+                                        <tr key={i} className="[&>td]:px-4 [&>td]:py-2">
+                                            <td>{s.customer}</td>
+                                            <td className="text-right font-mono tabular-nums">{money(s.quantity)}</td>
+                                            <td className="text-right font-mono tabular-nums">{money(s.amount)}</td>
+                                            <td className="text-right font-mono tabular-nums">{money(s.cost)}</td>
+                                            <td className={`text-right font-mono tabular-nums ${s.profit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>{money(s.profit)}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                        <p className="text-muted-foreground mt-2 text-xs">Each customer's sale is on their receivable — open their <strong>Customer Khata</strong> to see it.</p>
                     </div>
                 )}
 

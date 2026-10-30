@@ -109,7 +109,9 @@ class ConsignmentTripTest extends TestCase
         $this->assertEqualsWithDelta((float) $journal->lines->sum('debit'), (float) $journal->lines->sum('credit'), 0.01);
 
         // Sell the batch for 11,000,000 → profit 1,450,000; stock relieved to zero.
-        $service->settle($trip, ['sale_amount' => 11_000_000, 'customer_id' => $this->customer->id, 'settlement_date' => Carbon::now()->toDateString()]);
+        $service->settle($trip, ['settlement_date' => Carbon::now()->toDateString(), 'lines' => [
+            ['customer_id' => $this->customer->id, 'quantity' => 20000, 'amount' => 11_000_000],
+        ]]);
         $trip->refresh();
 
         $this->assertSame('settled', $trip->status);
@@ -119,6 +121,43 @@ class ConsignmentTripTest extends TestCase
         $balance->refresh();
         $this->assertEqualsWithDelta(0, (float) $balance->quantity, 0.0001);
         $this->assertEqualsWithDelta(0, (float) $balance->value, 0.01);
+    }
+
+    public function test_trip_can_be_sold_to_multiple_customers_each_keeping_their_khata(): void
+    {
+        $service = app(ConsignmentTripService::class);
+        $buyerA = $this->customer;
+        $buyerB = Customer::create(['company_id' => $this->company->id, 'code' => 'CUS-B', 'name' => 'Buyer B']);
+
+        $trip = $service->create([
+            'source' => 'purchase', 'item_id' => $this->item->id, 'warehouse_id' => $this->wh->id,
+            'supplier_id' => $this->supplier->id, 'quantity' => 20000, 'packages' => 1000, 'goods_rate' => 450,
+            'trip_date' => Carbon::now()->toDateString(), 'steps' => $this->demoSteps(),
+        ]);
+        $service->post($trip->fresh('steps'));
+
+        // Split the 20,000 KG batch (landed 9,550,000 => 477.5/KG) between two buyers.
+        $service->settle($trip->fresh(), ['settlement_date' => Carbon::now()->toDateString(), 'lines' => [
+            ['customer_id' => $buyerA->id, 'quantity' => 12000, 'amount' => 7_000_000],
+            ['customer_id' => $buyerB->id, 'quantity' => 8000, 'amount' => 5_000_000],
+        ]]);
+        $trip->refresh();
+
+        // Total profit = 12,000,000 sale - 9,550,000 landed cost.
+        $this->assertSame('settled', $trip->status);
+        $this->assertEqualsWithDelta(9_550_000, (float) $trip->cogs_total, 0.01);
+        $this->assertEqualsWithDelta(2_450_000, (float) $trip->profit, 0.01);
+        $this->assertCount(2, $trip->sales);
+
+        // Each buyer's receivable (khata) is stamped to them: 12000*477.5 and 8000*477.5 cost.
+        $ar = fn ($cid) => (float) \App\Models\JournalLine::query()
+            ->join('accounts as a', 'a.id', '=', 'journal_lines.account_id')
+            ->where('a.control_type', 'ar')
+            ->where('journal_lines.party_type', (new Customer)->getMorphClass())
+            ->where('journal_lines.party_id', $cid)
+            ->sum(\Illuminate\Support\Facades\DB::raw('journal_lines.base_debit - journal_lines.base_credit'));
+        $this->assertEqualsWithDelta(7_000_000, $ar($buyerA->id), 0.01);
+        $this->assertEqualsWithDelta(5_000_000, $ar($buyerB->id), 0.01);
     }
 
     public function test_manufactured_trip_adds_logistics_to_existing_stock(): void
@@ -140,7 +179,9 @@ class ConsignmentTripTest extends TestCase
         $this->assertEqualsWithDelta(20000, (float) $balance->quantity, 0.0001);
         $this->assertEqualsWithDelta(8_550_000, (float) $balance->value, 0.01);
 
-        $service->settle($trip->fresh(), ['sale_amount' => 10_000_000, 'settlement_date' => Carbon::now()->toDateString()]);
+        $service->settle($trip->fresh(), ['settlement_date' => Carbon::now()->toDateString(), 'lines' => [
+            ['customer_id' => $this->customer->id, 'quantity' => 20000, 'amount' => 10_000_000],
+        ]]);
         $trip->refresh();
 
         $this->assertEqualsWithDelta(8_550_000, (float) $trip->cogs_total, 0.01);

@@ -8,7 +8,9 @@ use App\Ledger\LedgerLine;
 use App\Ledger\PostingEngine;
 use App\Models\Account;
 use App\Models\ConsignmentTrip;
+use App\Models\ConsignmentTripSale;
 use App\Models\ConsignmentTripStep;
+use App\Models\Customer;
 use App\Models\Item;
 use App\Models\NumberSequence;
 use App\Models\StockLedgerEntry;
@@ -217,89 +219,144 @@ class ConsignmentTripService
      *
      * @param  array<string, mixed>  $data  sale_amount, customer_id?, sale_account_id?, settlement_date?
      */
+    /**
+     * Settle (sell) the trip across one or more customers. Each line is
+     * {customer_id, quantity, amount}: the goods are relieved at landed WAC per
+     * line and the sale value is booked as a receivable stamped to that customer,
+     * so every buyer's khata is maintained from this one sale. Batch
+     * Profit/Loss = total sale - total landed cost relieved.
+     *
+     * @param  array<string, mixed>  $data  lines[], settlement_date?
+     */
     public function settle(ConsignmentTrip $trip, array $data): ConsignmentTrip
     {
         if (! $trip->isPosted()) {
             throw new ConsignmentException('Only a posted trip can be settled.');
         }
 
+        $saleLines = array_values($data['lines'] ?? []);
+        if (empty($saleLines)) {
+            throw new ConsignmentException('Add at least one customer to sell to.');
+        }
+
         $trip->load('item', 'warehouse');
         $item = $trip->item;
         $warehouse = $trip->warehouse;
-        $saleAmount = round((float) $data['sale_amount'], 4);
-        if ($saleAmount < 0) {
-            throw new ConsignmentException('The sale amount cannot be negative.');
+
+        $totalQty = round(array_sum(array_map(fn ($l) => (float) $l['quantity'], $saleLines)), 4);
+        if ($totalQty <= 0) {
+            throw new ConsignmentException('Total quantity to sell must be more than zero.');
+        }
+        if ($totalQty > (float) $trip->quantity + 1e-6) {
+            throw new ConsignmentException("You are selling {$totalQty} but the trip only has ".rtrim(rtrim(number_format((float) $trip->quantity, 4), '0'), '.').' in stock.');
         }
 
-        return DB::transaction(function () use ($trip, $item, $warehouse, $saleAmount, $data) {
+        $revenueAccount = $item->income_account_id ?: $this->accountByCode('4100');
+        $cogsAccount = $item->cogs_account_id ?: $this->accountByCode('5100');
+        $arAccount = $this->accountByControl('ar');
+        if (! $revenueAccount || ! $cogsAccount) {
+            throw new ConsignmentException("Item {$item->code} needs revenue and COGS accounts.");
+        }
+        if (! $arAccount) {
+            throw new ConsignmentException('No Accounts Receivable control account is configured.');
+        }
+
+        return DB::transaction(function () use ($trip, $item, $warehouse, $saleLines, $data, $revenueAccount, $cogsAccount, $arAccount) {
             $locked = ConsignmentTrip::whereKey($trip->id)->lockForUpdate()->first();
             if (! $locked || $locked->status !== 'posted') {
                 throw new ConsignmentException('This trip is no longer awaiting settlement.');
             }
 
             $date = $data['settlement_date'] ?? now()->toDateString();
-            $customerId = $data['customer_id'] ?? $trip->customer_id;
+            $invAccount = AccountResolver::accountFor($item, $warehouse);
 
-            // Relieve stock at landed WAC — this cost already includes goods + every leg.
-            $out = $this->inventory->issue($item, $warehouse, (float) $trip->quantity, [
-                'posting_date' => $date, 'source' => $trip, 'voucher_no' => $trip->number,
-                'entry_type' => 'issue', 'remarks' => 'Consignment trip sale',
-            ]);
-            $cost = round(abs((float) $out->value), 4);
+            $ledger = [];
+            $saleRows = [];
+            $issuedIds = [];
+            $totalSale = 0.0;
+            $totalCost = 0.0;
 
-            $revenueAccount = $item->income_account_id ?: $this->accountByCode('4100');
-            $cogsAccount = $item->cogs_account_id ?: $this->accountByCode('5100');
-            if (! $revenueAccount || ! $cogsAccount) {
-                throw new ConsignmentException("Item {$item->code} needs revenue and COGS accounts.");
+            foreach ($saleLines as $line) {
+                $qty = round((float) $line['quantity'], 4);
+                $amount = round((float) $line['amount'], 4);
+                if ($qty <= 0) {
+                    continue;
+                }
+                $customer = Customer::find($line['customer_id']);
+                if (! $customer) {
+                    throw new ConsignmentException('Choose a valid customer for every sale line.');
+                }
+
+                // Relieve this customer's share at landed WAC (goods + every leg cost).
+                $out = $this->inventory->issue($item, $warehouse, $qty, [
+                    'posting_date' => $date, 'source' => $trip, 'voucher_no' => $trip->number,
+                    'entry_type' => 'issue', 'remarks' => "Trip sale to {$customer->code}",
+                ]);
+                $cost = round(abs((float) $out->value), 4);
+                $issuedIds[] = $out->id;
+
+                // Receivable stamped to this customer -> shows in their khata.
+                $ledger[] = new LedgerLine(
+                    accountId: (int) $arAccount,
+                    debit: $amount,
+                    description: "Trip {$trip->number} sale",
+                    partyType: $customer->getMorphClass(),
+                    partyId: $customer->id,
+                );
+
+                $saleRows[] = [
+                    'company_id' => $trip->company_id,
+                    'customer_id' => $customer->id,
+                    'quantity' => $qty,
+                    'amount' => $amount,
+                    'cost' => $cost,
+                    'profit' => round($amount - $cost, 4),
+                ];
+
+                $totalSale = round($totalSale + $amount, 4);
+                $totalCost = round($totalCost + $cost, 4);
             }
 
-            $debitId = $data['sale_account_id'] ?? $trip->sale_account_id ?? $this->accountByControl('ar');
-            if (! $debitId) {
-                throw new ConsignmentException('Choose an account to debit for the sale (receivable or bank).');
+            if (empty($saleRows)) {
+                throw new ConsignmentException('Add at least one customer with a quantity to sell.');
             }
 
-            $customer = $customerId ? \App\Models\Customer::find($customerId) : null;
-            $isReceivable = (int) $debitId === (int) $this->accountByControl('ar');
-
-            $lines = [];
-            $lines[] = new LedgerLine(
-                accountId: (int) $debitId,
-                debit: $saleAmount,
-                description: 'Consignment trip sale',
-                partyType: $isReceivable && $customer ? $customer->getMorphClass() : null,
-                partyId: $isReceivable && $customer ? $customer->id : null,
-            );
-            $lines[] = LedgerLine::credit((int) $revenueAccount, $saleAmount, 'Consignment trip sale');
-            if ($cost > 1e-9) {
-                $lines[] = LedgerLine::debit((int) $cogsAccount, $cost, 'Cost of goods sold');
-                $lines[] = LedgerLine::credit(AccountResolver::accountFor($item, $warehouse), $cost, 'Inventory relieved');
+            // Revenue and COGS aggregated (one line each keeps the journal tidy).
+            $ledger[] = LedgerLine::credit((int) $revenueAccount, $totalSale, "Trip {$trip->number} sales");
+            if ($totalCost > 1e-9) {
+                $ledger[] = LedgerLine::debit((int) $cogsAccount, $totalCost, 'Cost of goods sold');
+                $ledger[] = LedgerLine::credit($invAccount, $totalCost, 'Inventory relieved');
             }
 
             $journal = $this->posting->post(new LedgerEntry(
                 entryDate: $date,
-                lines: $lines,
+                lines: $ledger,
                 type: 'consignment_trip_sale',
                 reference: $trip->number,
                 memo: "Consignment trip {$trip->number} settlement",
                 source: $trip,
             ));
 
-            // Stamp only the issue entry with the settlement journal (the earlier
+            // Stamp the issue entries with the settlement journal (earlier
             // receipt/landed-cost entries keep their posting journal).
-            StockLedgerEntry::whereKey($out->id)->update(['journal_id' => $journal->id]);
+            StockLedgerEntry::whereIn('id', $issuedIds)->update(['journal_id' => $journal->id]);
+
+            foreach ($saleRows as $row) {
+                ConsignmentTripSale::create(array_merge($row, ['consignment_trip_id' => $trip->id]));
+            }
 
             $trip->update([
                 'status' => 'settled',
-                'customer_id' => $customerId,
-                'sale_account_id' => $debitId,
-                'sale_amount' => $saleAmount,
-                'cogs_total' => $cost,
-                'profit' => round($saleAmount - $cost, 4),
+                'customer_id' => count($saleRows) === 1 ? $saleRows[0]['customer_id'] : null,
+                'sale_account_id' => $arAccount,
+                'sale_amount' => $totalSale,
+                'cogs_total' => $totalCost,
+                'profit' => round($totalSale - $totalCost, 4),
                 'settlement_journal_id' => $journal->id,
                 'settled_at' => now(),
             ]);
 
-            return $trip->fresh('steps');
+            return $trip->fresh('steps', 'sales');
         });
     }
 

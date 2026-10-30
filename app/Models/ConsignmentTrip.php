@@ -45,6 +45,11 @@ class ConsignmentTrip extends Model
         return $this->hasMany(ConsignmentTripStep::class)->orderBy('sequence')->orderBy('id');
     }
 
+    public function sales(): HasMany
+    {
+        return $this->hasMany(ConsignmentTripSale::class)->orderBy('id');
+    }
+
     public function item(): BelongsTo
     {
         return $this->belongsTo(Item::class);

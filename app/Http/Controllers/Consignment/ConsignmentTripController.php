@@ -105,10 +105,11 @@ class ConsignmentTripController extends Controller
     {
         $scoped = fn (string $table) => Rule::exists($table, 'id')->where('company_id', $tenant->id());
         $validated = $request->validate([
-            'sale_amount' => ['required', 'numeric', 'gte:0'],
-            'customer_id' => ['nullable', 'integer', $scoped('customers')],
-            'sale_account_id' => ['nullable', 'integer', $scoped('accounts')],
             'settlement_date' => ['required', 'date'],
+            'lines' => ['required', 'array', 'min:1'],
+            'lines.*.customer_id' => ['required', 'integer', $scoped('customers')],
+            'lines.*.quantity' => ['required', 'numeric', 'gt:0'],
+            'lines.*.amount' => ['required', 'numeric', 'gte:0'],
         ]);
 
         try {
@@ -129,6 +130,7 @@ class ConsignmentTripController extends Controller
         $trip->load([
             'item:id,code,name', 'warehouse:id,code,name',
             'supplier:id,code,name', 'customer:id,code,name', 'steps',
+            'sales.customer:id,code,name',
         ]);
 
         return Inertia::render('consignment/trips/show', [
@@ -170,6 +172,13 @@ class ConsignmentTripController extends Controller
                     'rate' => (float) $s->rate,
                     'amount' => (float) $s->amount,
                     'status' => $s->status,
+                ]),
+                'sales' => $trip->sales->map(fn ($s) => [
+                    'customer' => $s->customer ? $s->customer->code.' — '.$s->customer->name : '—',
+                    'quantity' => (float) $s->quantity,
+                    'amount' => (float) $s->amount,
+                    'cost' => (float) $s->cost,
+                    'profit' => (float) $s->profit,
                 ]),
             ],
             'customers' => Customer::where('is_active', true)->orderBy('code')->get(['id', 'code', 'name']),
