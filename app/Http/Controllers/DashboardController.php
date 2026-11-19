@@ -70,6 +70,7 @@ class DashboardController extends Controller
             'trend' => $this->revenueExpenseTrend($companyId),
             'recent' => $this->recentJournals($companyId),
             'topItems' => $this->topItems($companyId),
+            'lowStock' => $this->lowStockItems($companyId),
             'receivables' => $this->partyBalances($companyId, 'ar', Customer::class, 'customers', false),
             'payables' => $this->partyBalances($companyId, 'ap', Supplier::class, 'suppliers', true),
             'payroll' => $this->payrollSummary($companyId),
@@ -206,6 +207,38 @@ class DashboardController extends Controller
             'gross' => round((float) $run->gross_total, 2),
             'net' => round((float) $run->net_total, 2),
         ];
+    }
+
+    /**
+     * Items at or below their reorder level — "ye maal khatam ho raha hai".
+     *
+     * @return array<int, array{code:string,name:string,on_hand:float,reorder:float}>
+     */
+    private function lowStockItems(?int $companyId): array
+    {
+        if (! $companyId) {
+            return [];
+        }
+
+        return DB::table('items as i')
+            ->leftJoin('stock_balances as s', 's.item_id', '=', 'i.id')
+            ->where('i.company_id', $companyId)
+            ->where('i.is_active', true)
+            ->where('i.tracks_inventory', true)
+            ->where('i.reorder_level', '>', 0)
+            ->groupBy('i.id', 'i.code', 'i.name', 'i.reorder_level')
+            ->havingRaw('COALESCE(SUM(s.quantity), 0) <= i.reorder_level')
+            ->select('i.code', 'i.name', 'i.reorder_level', DB::raw('COALESCE(SUM(s.quantity), 0) as on_hand'))
+            ->orderByRaw('COALESCE(SUM(s.quantity), 0) asc')
+            ->limit(12)
+            ->get()
+            ->map(fn ($r) => [
+                'code' => $r->code,
+                'name' => $r->name,
+                'on_hand' => round((float) $r->on_hand, 2),
+                'reorder' => round((float) $r->reorder_level, 2),
+            ])
+            ->all();
     }
 
     /**

@@ -1,8 +1,11 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
+    AlertTriangle,
     ArrowDownLeft,
     ArrowUpRight,
+    Banknote,
     BarChart3,
+    BookUser,
     Boxes,
     Building2,
     CalendarRange,
@@ -10,9 +13,11 @@ import {
     Contact,
     Factory,
     FileText,
+    HandCoins,
     Landmark,
     type LucideIcon,
     Package,
+    PackageCheck,
     Percent,
     Receipt,
     ShoppingCart,
@@ -21,6 +26,7 @@ import {
     Truck,
     Users,
     Wallet,
+    Zap,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { usePermissions } from '@/hooks/use-permissions';
@@ -29,6 +35,7 @@ import { money } from '@/lib/format';
 type Trend = { month: string; revenue: number; expense: number };
 type RecentRow = { number: string | null; date: string; type: string; memo: string | null; amount: number };
 type TopItem = { code: string; name: string; value: number };
+type LowStock = { code: string; name: string; on_hand: number; reorder: number };
 type Party = { name: string; balance: number };
 type Payroll = { number: string | null; period: string | null; status: string | null; employees: number; gross: number; net: number } | null;
 
@@ -39,6 +46,7 @@ type DashboardProps = {
     trend: Trend[];
     recent: RecentRow[];
     topItems: TopItem[];
+    lowStock: LowStock[];
     receivables: Party[];
     payables: Party[];
     payroll: Payroll;
@@ -82,12 +90,23 @@ function useCountUp(target: number, duration = 900) {
 type Tile = { label: string; value: number; icon: LucideIcon; from: string; to: string };
 type Module = { title: string; desc: string; href: string; icon: LucideIcon; from: string; to: string; permission?: string };
 
-export default function Dashboard({ kpis, stats, counts, trend, recent, topItems, receivables, payables, payroll, fiscalYear, role }: DashboardProps) {
+type QuickAction = { title: string; sub: string; href: string; icon: LucideIcon; from: string; to: string; permission?: string };
+
+export default function Dashboard({ kpis, stats, counts, trend, recent, topItems, lowStock, receivables, payables, payroll, fiscalYear, role }: DashboardProps) {
     const { auth, tenant } = usePage().props;
     const { can } = usePermissions();
     const now = useClock();
     const currency = tenant?.current?.base_currency ?? 'PKR';
     const company = tenant?.current;
+
+    const quickActions: QuickAction[] = [
+        { title: 'Nai Bikri', sub: 'Cash memo', href: '/sales/quick', icon: Zap, from: '#10b981', to: '#0f766e', permission: 'sales.invoice.post' },
+        { title: 'Nai Khareed', sub: 'Goods received', href: '/purchase/receipts/create', icon: PackageCheck, from: '#0ea5e9', to: '#2563eb', permission: 'purchase.grn.create' },
+        { title: 'Paisa Aaya', sub: 'Customer receipt', href: '/sales/receipts/create', icon: HandCoins, from: '#8b5cf6', to: '#6d28d9', permission: 'sales.receipt.manage' },
+        { title: 'Paisa Diya', sub: 'Supplier payment', href: '/purchase/payments/create', icon: Banknote, from: '#f43f5e', to: '#be185d', permission: 'purchase.payment.manage' },
+        { title: 'Udhaar', sub: 'Lena / Dena', href: '/udhaar', icon: BookUser, from: '#6366f1', to: '#1e3a8a', permission: 'sales.order.manage' },
+        { title: 'Aaj ka Hisaab', sub: 'Roznamcha', href: '/day-book', icon: CalendarRange, from: '#f59e0b', to: '#c2410c', permission: 'accounting.report.view' },
+    ].filter((a) => !a.permission || can(a.permission));
 
     const tiles: Tile[] = [
         { label: 'Cash in Hand', value: kpis.cash, icon: Wallet, from: '#10b981', to: '#0f766e' },
@@ -149,6 +168,56 @@ export default function Dashboard({ kpis, stats, counts, trend, recent, topItems
                         </div>
                     </div>
                 </div>
+
+                {/* Quick actions — big buttons for daily work */}
+                {quickActions.length > 0 && (
+                    <div className="dash-anim" style={{ animation: 'dashRise .5s ease-out .08s both' }}>
+                        <h2 className="text-muted-foreground mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide">
+                            <Zap className="size-4 text-amber-500" /> Jaldi Kaam
+                        </h2>
+                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+                            {quickActions.map((a) => (
+                                <button
+                                    key={a.title}
+                                    type="button"
+                                    onClick={() => router.visit(a.href)}
+                                    style={gradient(a.from, a.to)}
+                                    className="group relative flex h-24 flex-col items-start justify-between overflow-hidden rounded-2xl p-3 text-left text-white shadow-md transition-all hover:-translate-y-1 hover:shadow-xl"
+                                >
+                                    <a.icon className="absolute -bottom-3 -right-3 size-16 opacity-20 transition-transform group-hover:scale-110" />
+                                    <div className="flex size-9 items-center justify-center rounded-lg bg-white/20 backdrop-blur">
+                                        <a.icon className="size-5" />
+                                    </div>
+                                    <div className="relative">
+                                        <div className="text-sm font-bold leading-tight">{a.title}</div>
+                                        <div className="text-[10px] text-white/80">{a.sub}</div>
+                                    </div>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* Low-stock alert — "ye maal khatam ho raha hai" */}
+                {lowStock.length > 0 && (
+                    <div className="dash-anim rounded-2xl border border-amber-300 bg-amber-50 p-4 shadow-sm dark:border-amber-900/50 dark:bg-amber-950/30" style={{ animation: 'dashRise .5s ease-out .1s both' }}>
+                        <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-amber-800 dark:text-amber-300">
+                            <AlertTriangle className="size-4" /> Maal khatam ho raha hai ({lowStock.length})
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                            {lowStock.map((it) => (
+                                <span
+                                    key={it.code}
+                                    className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-white px-2.5 py-1 text-xs dark:border-amber-900/60 dark:bg-amber-950/40"
+                                    title={`Reorder level: ${it.reorder}`}
+                                >
+                                    <span className="font-medium">{it.name}</span>
+                                    <span className="font-mono tabular-nums text-amber-700 dark:text-amber-300">{it.on_hand}</span>
+                                </span>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 {/* KPI tiles */}
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">

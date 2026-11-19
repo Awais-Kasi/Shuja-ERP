@@ -9,6 +9,7 @@ import {
     Building2,
     CalendarCheck,
     CalendarClock,
+    CalendarRange,
     ClipboardList,
     Coins,
     Contact,
@@ -37,10 +38,12 @@ import {
     Users,
     Wallet,
     Warehouse,
+    Zap,
 } from 'lucide-react';
 import { usePage } from '@inertiajs/react';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
+import { ModeToggle } from '@/components/mode-toggle';
 import { CompanySwitcher } from '@/components/company-switcher';
 import {
     Sidebar,
@@ -49,13 +52,20 @@ import {
     SidebarHeader,
 } from '@/components/ui/sidebar';
 import { usePermissions } from '@/hooks/use-permissions';
-import type { NavGroup } from '@/types';
+import { useAppMode } from '@/hooks/use-app-mode';
+import type { NavItem } from '@/types';
 
-const navGroups: NavGroup[] = [
+type NavItemX = NavItem & { advanced?: boolean };
+type NavGroupX = { label: string; advanced?: boolean; items: NavItemX[] };
+
+const navGroups: NavGroupX[] = [
     {
         label: 'Home',
         items: [
             { title: 'Dashboard', href: '/dashboard', icon: LayoutGrid, permission: 'dashboard.view' },
+            { title: 'Quick Sale', href: '/sales/quick', icon: Zap, permission: 'sales.invoice.post' },
+            { title: 'Udhaar (Lena / Dena)', href: '/udhaar', icon: HandCoins, permission: 'sales.order.manage' },
+            { title: 'Aaj ka Hisaab', href: '/day-book', icon: CalendarRange, permission: 'accounting.report.view' },
             { title: 'Reports', href: '/reports', icon: BarChart3, permission: 'dashboard.view' },
         ],
     },
@@ -68,7 +78,7 @@ const navGroups: NavGroup[] = [
             { title: 'Stock on Hand', href: '/inventory/stock-balance', icon: Boxes, permission: 'inventory.stock.view' },
             { title: 'Stock Khata', href: '/inventory/stock-ledger', icon: ScrollText, permission: 'inventory.stock.view' },
             { title: 'Stock Value', href: '/reports/inventory-valuation', icon: Scale, permission: 'inventory.valuation.view' },
-            { title: 'Stock Aging', href: '/reports/stock-aging', icon: CalendarClock, permission: 'inventory.valuation.view' },
+            { title: 'Stock Aging', href: '/reports/stock-aging', icon: CalendarClock, permission: 'inventory.valuation.view', advanced: true },
             { title: 'Stock Adjustment', href: '/inventory/adjustments', icon: ClipboardList, permission: 'inventory.stock.view' },
             { title: 'Godown Transfer', href: '/inventory/transfers', icon: ArrowLeftRight, permission: 'inventory.stock.view' },
         ],
@@ -119,11 +129,11 @@ const navGroups: NavGroup[] = [
         items: [
             { title: 'Profit & Loss', href: '/accounting/income-statement', icon: TrendingUp, permission: 'accounting.report.view' },
             { title: 'Balance Sheet', href: '/accounting/balance-sheet', icon: BookOpen, permission: 'accounting.report.view' },
-            { title: 'Cash Flow', href: '/accounting/cash-flow', icon: ArrowLeftRight, permission: 'accounting.report.view' },
-            { title: 'Trial Balance', href: '/accounting/trial-balance', icon: Scale, permission: 'accounting.report.view' },
+            { title: 'Cash Flow', href: '/accounting/cash-flow', icon: ArrowLeftRight, permission: 'accounting.report.view', advanced: true },
+            { title: 'Trial Balance', href: '/accounting/trial-balance', icon: Scale, permission: 'accounting.report.view', advanced: true },
             { title: 'Receivables Aging', href: '/reports/aged-receivables', icon: BookUser, permission: 'accounting.report.view' },
             { title: 'Payables Aging', href: '/reports/aged-payables', icon: BookUser, permission: 'accounting.report.view' },
-            { title: 'Sales Tax', href: '/reports/sales-tax', icon: ReceiptText, permission: 'accounting.report.view' },
+            { title: 'Sales Tax', href: '/reports/sales-tax', icon: ReceiptText, permission: 'accounting.report.view', advanced: true },
         ],
     },
     {
@@ -137,6 +147,7 @@ const navGroups: NavGroup[] = [
     },
     {
         label: 'Accountant',
+        advanced: true,
         items: [
             { title: 'Account Heads', href: '/accounting/accounts', icon: Landmark, permission: 'accounting.account.view' },
             { title: 'Vouchers', href: '/accounting/journals', icon: BookOpenText, permission: 'accounting.journal.view' },
@@ -162,7 +173,9 @@ const navGroups: NavGroup[] = [
 
 export function AppSidebar() {
     const { can } = usePermissions();
+    const { mode } = useAppMode();
     const version = (usePage().props as { version?: string }).version;
+    const simple = mode === 'simple';
 
     return (
         <Sidebar collapsible="icon" variant="inset">
@@ -172,15 +185,25 @@ export function AppSidebar() {
 
             <SidebarContent>
                 {navGroups.map((group) => {
+                    // In Simple mode, hide whole "advanced" groups and advanced items.
+                    if (simple && group.advanced) {
+                        return null;
+                    }
                     const items = group.items.filter(
-                        (item) => !item.permission || can(item.permission),
+                        (item) =>
+                            (!item.permission || can(item.permission)) &&
+                            !(simple && item.advanced),
                     );
+                    if (items.length === 0) {
+                        return null;
+                    }
 
                     return <NavMain key={group.label} label={group.label} items={items} />;
                 })}
             </SidebarContent>
 
             <SidebarFooter>
+                <ModeToggle />
                 <NavUser />
                 {version && (
                     <a

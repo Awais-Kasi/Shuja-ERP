@@ -1,13 +1,57 @@
-/** Format a numeric amount with thousands separators and 2 decimals. */
+/**
+ * Format a numeric amount with South-Asian (lakh / crore) grouping and 2 decimals,
+ * e.g. 1234567.5 → "12,34,567.50". This is how Pakistani users read figures.
+ */
 export function money(value: number | string | null | undefined): string {
     const n = typeof value === 'string' ? parseFloat(value) : (value ?? 0);
     if (!Number.isFinite(n)) {
         return '0.00';
     }
-    return n.toLocaleString(undefined, {
+    return n.toLocaleString('en-IN', {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
     });
+}
+
+/** Amount prefixed with the rupee symbol, e.g. "Rs 12,34,567.50". */
+export function rupees(value: number | string | null | undefined): string {
+    return `Rs ${money(value)}`;
+}
+
+/**
+ * Short, human amount for tiles & summaries using local units:
+ *   25000000 → "2.50 Cr", 350000 → "3.50 Lac", 45000 → "45,000".
+ */
+export function compactPk(value: number | string | null | undefined): string {
+    const n = typeof value === 'string' ? parseFloat(value) : (value ?? 0);
+    if (!Number.isFinite(n)) return '0';
+    const abs = Math.abs(n);
+    const sign = n < 0 ? '-' : '';
+    if (abs >= 1e7) return `${sign}${(abs / 1e7).toFixed(2)} Cr`;
+    if (abs >= 1e5) return `${sign}${(abs / 1e5).toFixed(2)} Lac`;
+    return n.toLocaleString('en-IN', { maximumFractionDigits: 0 });
+}
+
+/**
+ * Normalise a Pakistani phone number to international digits for wa.me,
+ * e.g. "0300-1234567" → "923001234567". Returns '' if it can't be made sense of.
+ */
+export function waPhone(phone: string | null | undefined): string {
+    if (!phone) return '';
+    let d = String(phone).replace(/\D+/g, '');
+    if (!d) return '';
+    if (d.startsWith('0092')) d = d.slice(2);
+    if (d.startsWith('92')) return d;
+    if (d.startsWith('0')) return `92${d.slice(1)}`;
+    if (d.length === 10 && d.startsWith('3')) return `92${d}`;
+    return d;
+}
+
+/** Build a WhatsApp share link with a pre-filled (unsent) message. */
+export function whatsappUrl(phone: string | null | undefined, text: string): string {
+    const p = waPhone(phone);
+    const body = encodeURIComponent(text);
+    return p ? `https://wa.me/${p}?text=${body}` : `https://wa.me/?text=${body}`;
 }
 
 /** Format a money amount, rendering zero as an em dash for cleaner tables. */

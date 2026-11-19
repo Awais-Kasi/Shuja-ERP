@@ -116,7 +116,7 @@ class SalesReportController extends Controller
         });
 
         return Inertia::render('sales/customer-statement', [
-            'party' => ['id' => $customer->id, 'code' => $customer->code, 'name' => $customer->name],
+            'party' => ['id' => $customer->id, 'code' => $customer->code, 'name' => $customer->name, 'phone' => $customer->phone],
             'opening' => $opening,
             'rows' => $rows,
             'closing' => $running,

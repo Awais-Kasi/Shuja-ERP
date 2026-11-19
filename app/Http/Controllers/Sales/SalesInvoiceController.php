@@ -5,18 +5,23 @@ namespace App\Http\Controllers\Sales;
 use App\Http\Controllers\Controller;
 use App\Inventory\InventoryException;
 use App\Ledger\PostingException;
+use App\Models\Account;
 use App\Models\Customer;
 use App\Models\ExchangeRate;
 use App\Models\Item;
+use App\Models\Payment;
 use App\Models\SalesInvoice;
 use App\Models\SalesOrder;
 use App\Models\Warehouse;
+use App\Payments\PaymentException;
+use App\Payments\PaymentService;
 use App\Sales\SalesException;
 use App\Sales\SalesInvoiceService;
 use App\Support\Tenancy\TenantManager;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -153,6 +158,115 @@ class SalesInvoiceController extends Controller
         }
 
         return redirect()->route('sales.invoices.show', $invoice)->with('success', "Invoice {$invoice->number} posted.");
+    }
+
+    /**
+     * One-screen "Cash Memo" — pick a customer, add items, optionally take money,
+     * all in a single submit. Posts the invoice and (if any) the receipt together.
+     */
+    public function quickCreate(TenantManager $tenant): Response
+    {
+        return Inertia::render('sales/quick', [
+            'customers' => Customer::where('is_active', true)->orderBy('name')->get(['id', 'code', 'name']),
+            'warehouses' => Warehouse::where('is_active', true)->orderBy('code')->get(['id', 'code', 'name']),
+            'items' => Item::where('is_active', true)->where('is_sellable', true)->orderBy('name')
+                ->get(['id', 'code', 'name', 'standard_cost'])
+                ->map(fn ($i) => ['id' => $i->id, 'code' => $i->code, 'name' => $i->name, 'rate' => (float) $i->standard_cost]),
+            'accounts' => Account::whereIn('control_type', ['cash', 'bank'])->where('is_group', false)
+                ->where('is_active', true)->orderBy('code')->get(['id', 'code', 'name', 'control_type']),
+            'today' => now()->toDateString(),
+            'baseCurrency' => $tenant->get()->base_currency,
+        ]);
+    }
+
+    public function quickStore(Request $request, SalesInvoiceService $service, PaymentService $payments, TenantManager $tenant): RedirectResponse
+    {
+        $validated = $request->validate([
+            'customer_id' => ['required', 'integer', Rule::exists('customers', 'id')->where('company_id', $tenant->id())],
+            'warehouse_id' => ['required', 'integer', Rule::exists('warehouses', 'id')->where('company_id', $tenant->id())],
+            'invoice_date' => ['required', 'date'],
+            'memo' => ['nullable', 'string', 'max:500'],
+            'lines' => ['required', 'array', 'min:1'],
+            'lines.*.item_id' => ['required', 'integer'],
+            'lines.*.quantity' => ['required', 'numeric', 'gt:0'],
+            'lines.*.rate' => ['required', 'numeric', 'min:0'],
+            'amount_received' => ['nullable', 'numeric', 'min:0'],
+            'account_id' => ['nullable', 'integer', 'required_with:amount_received', Rule::exists('accounts', 'id')->where('company_id', $tenant->id())],
+        ]);
+
+        $invoice = DB::transaction(function () use ($validated, $tenant) {
+            $invoice = SalesInvoice::create([
+                'company_id' => $tenant->id(),
+                'customer_id' => $validated['customer_id'],
+                'warehouse_id' => $validated['warehouse_id'],
+                'invoice_date' => $validated['invoice_date'],
+                'currency' => $tenant->get()->base_currency,
+                'fx_rate' => 1,
+                'tax_amount' => 0,
+                'status' => 'draft',
+                'memo' => $validated['memo'] ?? null,
+            ]);
+
+            foreach ($validated['lines'] as $line) {
+                $invoice->lines()->create([
+                    'company_id' => $tenant->id(),
+                    'item_id' => $line['item_id'],
+                    'quantity' => $line['quantity'],
+                    'rate' => $line['rate'],
+                    'amount' => round($line['quantity'] * $line['rate'], 4),
+                ]);
+            }
+
+            return $invoice;
+        });
+
+        try {
+            $service->post($invoice);
+        } catch (SalesException|InventoryException|PostingException $e) {
+            $invoice->delete();
+
+            return back()->withErrors(['posting' => $e->getMessage()])->withInput();
+        }
+
+        // Optionally take money against this very invoice, in one go.
+        $received = round((float) ($validated['amount_received'] ?? 0), 2);
+        if ($received > 0.005 && ! empty($validated['account_id'])) {
+            try {
+                $allocation = min($received, round((float) $invoice->total, 2));
+                $payment = DB::transaction(function () use ($validated, $received, $allocation, $invoice, $tenant) {
+                    $payment = Payment::create([
+                        'company_id' => $tenant->id(),
+                        'direction' => 'receive',
+                        'party_type' => $invoice->customer->getMorphClass(),
+                        'party_id' => $invoice->customer_id,
+                        'payment_date' => $validated['invoice_date'],
+                        'account_id' => $validated['account_id'],
+                        'amount' => $received,
+                        'currency' => $tenant->get()->base_currency,
+                        'fx_rate' => 1,
+                        'memo' => "Cash sale {$invoice->number}",
+                        'status' => 'draft',
+                        'created_by' => optional(auth()->user())->id,
+                    ]);
+                    if ($allocation > 0.005) {
+                        $payment->allocations()->create([
+                            'company_id' => $tenant->id(),
+                            'allocatable_type' => (new SalesInvoice)->getMorphClass(),
+                            'allocatable_id' => $invoice->id,
+                            'amount' => $allocation,
+                        ]);
+                    }
+
+                    return $payment;
+                });
+                $payments->post($payment);
+            } catch (PaymentException|PostingException $e) {
+                return redirect()->route('sales.invoices.show', $invoice)
+                    ->with('error', "Sale {$invoice->number} posted, but the receipt could not be recorded ({$e->getMessage()}). Please record the payment from Customer Receipts.");
+            }
+        }
+
+        return redirect()->route('sales.invoices.show', $invoice)->with('success', "Sale {$invoice->number} posted.");
     }
 
     /** Print-ready A4 invoice document (browser Print / Save-PDF, no PDF library). */

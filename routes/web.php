@@ -10,6 +10,8 @@ use App\Http\Controllers\Banking\BankReconciliationController;
 use App\Http\Controllers\Budgeting\BudgetController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DayBookController;
+use App\Http\Controllers\UdhaarController;
 use App\Http\Controllers\FixedAssets\FixedAssetController;
 use App\Http\Controllers\Hr\AttendanceController;
 use App\Http\Controllers\Hr\EmployeeController;
@@ -64,6 +66,10 @@ Route::get('version', function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Everyday "easy" screens
+    Route::get('udhaar', [UdhaarController::class, 'index'])->middleware('can:sales.order.manage')->name('udhaar');
+    Route::get('day-book', [DayBookController::class, 'index'])->middleware('can:accounting.report.view')->name('day-book');
 
     // Active-company switching
     Route::post('companies/switch', [CompanyController::class, 'switch'])->name('companies.switch');
@@ -177,6 +183,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Sales (Phase 4)
     Route::prefix('sales')->name('sales.')->group(function () {
+        // One-screen Cash Memo (quick sale + optional receipt together)
+        Route::get('quick', [SalesInvoiceController::class, 'quickCreate'])->middleware('can:sales.invoice.post')->name('quick');
+        Route::post('quick', [SalesInvoiceController::class, 'quickStore'])->middleware('can:sales.invoice.post')->name('quick.store');
+
         Route::get('customers', [CustomerController::class, 'index'])->middleware('can:sales.customer.manage')->name('customers.index');
         Route::post('customers', [CustomerController::class, 'store'])->middleware('can:sales.customer.manage')->name('customers.store');
 

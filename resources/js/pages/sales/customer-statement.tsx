@@ -1,12 +1,13 @@
-import { Head, Link, router } from '@inertiajs/react';
-import { ArrowLeft } from 'lucide-react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
+import { ArrowLeft, MessageCircle } from 'lucide-react';
 import { type FormEvent, useState } from 'react';
+import { ScreenHelp } from '@/components/screen-help';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { money } from '@/lib/format';
+import { money, whatsappUrl } from '@/lib/format';
 
-type Party = { id: number; code: string; name: string };
+type Party = { id: number; code: string; name: string; phone?: string | null };
 type Row = { date: string; journal_id: number; voucher: string | null; detail: string; debit: number; credit: number; balance: number };
 
 export default function CustomerStatement({
@@ -16,11 +17,14 @@ export default function CustomerStatement({
 }) {
     const [f, setF] = useState(from ?? '');
     const [t, setT] = useState(to ?? '');
+    const company = (usePage().props as { tenant?: { current?: { name?: string } } }).tenant?.current?.name ?? '';
 
     const apply = (e: FormEvent) => {
         e.preventDefault();
         router.get(`/sales/customer-ledger/${party.id}`, { from: f || undefined, to: t || undefined }, { preserveState: true });
     };
+
+    const waText = `Assalam o Alaikum ${party.name}, aap ka mojooda baqaya Rs ${money(closing)} hai. Baraye meharbani ada karne ki zehmat karein. Shukriya.${company ? ` — ${company}` : ''}`;
 
     return (
         <>
@@ -32,7 +36,21 @@ export default function CustomerStatement({
                         <h1 className="text-2xl font-semibold tracking-tight">{party.name}</h1>
                         <p className="text-muted-foreground text-sm">Customer account statement <span className="font-mono text-xs">{party.code}</span></p>
                     </div>
+                    <a
+                        href={whatsappUrl(party.phone, waText)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="no-print ml-auto inline-flex items-center gap-1.5 rounded-lg bg-emerald-500/10 px-3 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-500/20 dark:text-emerald-400"
+                    >
+                        <MessageCircle className="size-4" /> WhatsApp
+                    </a>
                 </div>
+
+                <ScreenHelp>
+                    Yeh is customer ka poora <b>khata</b> hai — har kharedari aur har payment, sath mein chalta hua
+                    balance. <b>WhatsApp</b> button se mojooda baqaya customer ko bhej dein. Kisi bhi row par click karein
+                    to us ki accounting entry khul jati hai.
+                </ScreenHelp>
 
                 <form onSubmit={apply} className="flex flex-wrap items-end gap-3">
                     <div className="grid gap-1.5"><Label htmlFor="from" className="text-xs">From</Label><Input id="from" type="date" value={f} onChange={(e) => setF(e.target.value)} className="w-40" /></div>
