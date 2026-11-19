@@ -30,17 +30,17 @@ export default function ShowInvoice({ invoice }: { invoice: Invoice }) {
                     </div>
                 </div>
                 <dl className="grid grid-cols-2 gap-4 rounded-xl border p-4 sm:grid-cols-4">
-                    <div><dt className="text-muted-foreground text-xs uppercase">Warehouse</dt><dd className="mt-0.5 text-sm">{invoice.warehouse}</dd></div>
-                    <div><dt className="text-muted-foreground text-xs uppercase">Due date</dt><dd className="mt-0.5 text-sm">{invoice.due_date ?? '—'}</dd></div>
-                    <div><dt className="text-muted-foreground text-xs uppercase">COGS</dt><dd className="mt-0.5 font-mono text-sm tabular-nums">{money(invoice.cogs_total)}</dd></div>
-                    <div><dt className="text-muted-foreground text-xs uppercase">Gross profit</dt><dd className={`mt-0.5 font-mono text-sm font-semibold tabular-nums ${grossProfit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>{money(grossProfit)}</dd></div>
+                    <div><dt className="text-muted-foreground text-xs uppercase">Godown</dt><dd className="mt-0.5 text-sm">{invoice.warehouse}</dd></div>
+                    <div><dt className="text-muted-foreground text-xs uppercase">Due Date</dt><dd className="mt-0.5 text-sm">{invoice.due_date ?? '—'}</dd></div>
+                    <div><dt className="text-muted-foreground text-xs uppercase">Lagat (COGS)</dt><dd className="mt-0.5 font-mono text-sm tabular-nums">{money(invoice.cogs_total)}</dd></div>
+                    <div><dt className="text-muted-foreground text-xs uppercase">Munafa</dt><dd className={`mt-0.5 font-mono text-sm font-semibold tabular-nums ${grossProfit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>{money(grossProfit)}</dd></div>
                 </dl>
                 <div className="overflow-x-auto rounded-xl border">
                     <table className="w-full text-sm">
                         <thead className="bg-muted/50 text-muted-foreground">
                             <tr className="[&>th]:px-4 [&>th]:py-2.5 [&>th]:text-left [&>th]:font-medium">
-                                <th>Item</th>
-                                <th className="w-32 text-right">Quantity</th>
+                                <th>Maal (Item)</th>
+                                <th className="w-32 text-right">Qty</th>
                                 <th className="w-32 text-right">Rate</th>
                                 <th className="w-36 text-right">Amount</th>
                             </tr>
@@ -58,9 +58,9 @@ export default function ShowInvoice({ invoice }: { invoice: Invoice }) {
                     </table>
                 </div>
                 <div className="flex flex-col items-end gap-1.5 text-sm">
-                    <div className="flex w-64 justify-between"><span className="text-muted-foreground">Subtotal</span><span className="font-mono tabular-nums">{money(invoice.subtotal)}</span></div>
-                    <div className="flex w-64 justify-between"><span className="text-muted-foreground">Output tax</span><span className="font-mono tabular-nums">{money(invoice.tax_amount)}</span></div>
-                    <div className="flex w-64 justify-between border-t pt-1.5 text-base font-semibold"><span>Total receivable</span><span className="font-mono tabular-nums">{money(invoice.total)}</span></div>
+                    <div className="flex w-64 justify-between"><span className="text-muted-foreground">Maal ki keemat</span><span className="font-mono tabular-nums">{money(invoice.subtotal)}</span></div>
+                    <div className="flex w-64 justify-between"><span className="text-muted-foreground">Tax</span><span className="font-mono tabular-nums">{money(invoice.tax_amount)}</span></div>
+                    <div className="flex w-64 justify-between border-t pt-1.5 text-base font-semibold"><span>Kul (Lena hai)</span><span className="font-mono tabular-nums">{money(invoice.total)}</span></div>
                 </div>
             </div>
         </>

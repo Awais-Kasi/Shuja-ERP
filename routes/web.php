@@ -34,6 +34,7 @@ use App\Http\Controllers\Inventory\UomController;
 use App\Http\Controllers\Inventory\WarehouseController;
 use App\Http\Controllers\Purchasing\GoodsReceiptController;
 use App\Http\Controllers\Purchasing\PurchaseBillController;
+use App\Http\Controllers\Purchasing\QuickPurchaseController;
 use App\Http\Controllers\Purchasing\PurchaseOrderController;
 use App\Http\Controllers\Purchasing\PurchaseReportController;
 use App\Http\Controllers\Purchasing\SupplierController;
@@ -70,6 +71,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Everyday "easy" screens
     Route::get('udhaar', [UdhaarController::class, 'index'])->middleware('can:sales.order.manage')->name('udhaar');
     Route::get('day-book', [DayBookController::class, 'index'])->middleware('can:accounting.report.view')->name('day-book');
+    Route::get('search', [\App\Http\Controllers\SearchController::class, 'index'])->name('search');
 
     // Active-company switching
     Route::post('companies/switch', [CompanyController::class, 'switch'])->name('companies.switch');
@@ -143,6 +145,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Purchase (Phase 3)
     Route::prefix('purchase')->name('purchase.')->group(function () {
+        // One-screen Quick Purchase (receive + bill + optional payment together)
+        Route::get('quick', [QuickPurchaseController::class, 'create'])->middleware('can:purchase.bill.post')->name('quick');
+        Route::post('quick', [QuickPurchaseController::class, 'store'])->middleware('can:purchase.bill.post')->name('quick.store');
+
         Route::get('suppliers', [SupplierController::class, 'index'])->middleware('can:purchase.supplier.manage')->name('suppliers.index');
         Route::post('suppliers', [SupplierController::class, 'store'])->middleware('can:purchase.supplier.manage')->name('suppliers.store');
 

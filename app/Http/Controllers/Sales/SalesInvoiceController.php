@@ -170,8 +170,8 @@ class SalesInvoiceController extends Controller
             'customers' => Customer::where('is_active', true)->orderBy('name')->get(['id', 'code', 'name']),
             'warehouses' => Warehouse::where('is_active', true)->orderBy('code')->get(['id', 'code', 'name']),
             'items' => Item::where('is_active', true)->where('is_sellable', true)->orderBy('name')
-                ->get(['id', 'code', 'name', 'standard_cost'])
-                ->map(fn ($i) => ['id' => $i->id, 'code' => $i->code, 'name' => $i->name, 'rate' => (float) $i->standard_cost]),
+                ->get(['id', 'code', 'name', 'sale_price'])
+                ->map(fn ($i) => ['id' => $i->id, 'code' => $i->code, 'name' => $i->name, 'rate' => (float) $i->sale_price]),
             'accounts' => Account::whereIn('control_type', ['cash', 'bank'])->where('is_group', false)
                 ->where('is_active', true)->orderBy('code')->get(['id', 'code', 'name', 'control_type']),
             'today' => now()->toDateString(),

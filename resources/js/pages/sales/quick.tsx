@@ -50,6 +50,18 @@ export default function QuickSale({ customers, warehouses, items, accounts, toda
             form.data.lines.map((l, i) => (i === idx ? { ...l, [key]: val } : l)),
         );
     };
+    // Picking an item auto-fills its saved sale price (only when the rate is still blank).
+    const onItem = (idx: number, itemId: string) => {
+        const item = items.find((it) => String(it.id) === itemId);
+        form.setData(
+            'lines',
+            form.data.lines.map((l, i) =>
+                i === idx
+                    ? { ...l, item_id: itemId, rate: l.rate || (item && item.rate ? String(item.rate) : l.rate) }
+                    : l,
+            ),
+        );
+    };
     const addLine = () => form.setData('lines', [...form.data.lines, { item_id: '', quantity: '1', rate: '' }]);
     const removeLine = (idx: number) =>
         form.setData('lines', form.data.lines.length > 1 ? form.data.lines.filter((_, i) => i !== idx) : form.data.lines);
@@ -152,7 +164,7 @@ export default function QuickSale({ customers, warehouses, items, accounts, toda
                                             <select
                                                 className={selectClass}
                                                 value={l.item_id}
-                                                onChange={(e) => setLine(idx, 'item_id', e.target.value)}
+                                                onChange={(e) => onItem(idx, e.target.value)}
                                             >
                                                 <option value="">— Item chunein —</option>
                                                 {items.map((it) => (

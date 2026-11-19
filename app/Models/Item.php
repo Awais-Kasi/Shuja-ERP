@@ -18,7 +18,7 @@ class Item extends Model
         'company_id', 'uom_id', 'code', 'name', 'description', 'type', 'valuation_method',
         'inventory_account_id', 'cogs_account_id', 'income_account_id',
         'tracks_inventory', 'is_purchasable', 'is_sellable', 'is_active',
-        'reorder_level', 'standard_cost',
+        'reorder_level', 'standard_cost', 'sale_price',
     ];
 
     protected function casts(): array
@@ -30,6 +30,7 @@ class Item extends Model
             'is_active' => 'boolean',
             'reorder_level' => 'decimal:4',
             'standard_cost' => 'decimal:4',
+            'sale_price' => 'decimal:4',
         ];
     }
 

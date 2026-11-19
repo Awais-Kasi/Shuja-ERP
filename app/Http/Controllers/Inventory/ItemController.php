@@ -31,6 +31,8 @@ class ItemController extends Controller
                 'uom' => $i->uom?->code,
                 'valuation' => $i->valuationMethod()->label(),
                 'account' => $i->inventoryAccount?->code,
+                'sale_price' => (float) $i->sale_price,
+                'standard_cost' => (float) $i->standard_cost,
                 'qty' => (float) $i->qty,
                 'value' => (float) $i->stock_value,
                 'is_active' => $i->is_active,
@@ -57,6 +59,8 @@ class ItemController extends Controller
             'inventory_account_id' => ['nullable', 'integer', Rule::exists('accounts', 'id')->where('company_id', $tenant->id())],
             'income_account_id' => ['nullable', 'integer', Rule::exists('accounts', 'id')->where('company_id', $tenant->id())],
             'cogs_account_id' => ['nullable', 'integer', Rule::exists('accounts', 'id')->where('company_id', $tenant->id())],
+            'sale_price' => ['nullable', 'numeric', 'min:0'],
+            'standard_cost' => ['nullable', 'numeric', 'min:0'],
         ]);
 
         // Derive usability flags from the item type so the new item shows up in the
@@ -65,6 +69,8 @@ class ItemController extends Controller
         $validated['tracks_inventory'] = $validated['type'] !== 'service';
         $validated['is_purchasable'] = true;
         $validated['is_sellable'] = true;
+        $validated['sale_price'] = $validated['sale_price'] ?? 0;
+        $validated['standard_cost'] = $validated['standard_cost'] ?? 0;
 
         Item::create($validated);
 

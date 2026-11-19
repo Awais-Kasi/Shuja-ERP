@@ -64,6 +64,7 @@ const navGroups: NavGroupX[] = [
         items: [
             { title: 'Dashboard', href: '/dashboard', icon: LayoutGrid, permission: 'dashboard.view' },
             { title: 'Quick Sale', href: '/sales/quick', icon: Zap, permission: 'sales.invoice.post' },
+            { title: 'Quick Purchase', href: '/purchase/quick', icon: ShoppingCart, permission: 'purchase.bill.post' },
             { title: 'Udhaar (Lena / Dena)', href: '/udhaar', icon: HandCoins, permission: 'sales.order.manage' },
             { title: 'Aaj ka Hisaab', href: '/day-book', icon: CalendarRange, permission: 'accounting.report.view' },
             { title: 'Reports', href: '/reports', icon: BarChart3, permission: 'dashboard.view' },

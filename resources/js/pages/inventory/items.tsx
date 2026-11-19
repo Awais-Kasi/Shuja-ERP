@@ -31,6 +31,8 @@ type ItemRow = {
     uom: string | null;
     valuation: string;
     account: string | null;
+    sale_price: number;
+    standard_cost: number;
     qty: number;
     value: number;
     is_active: boolean;
@@ -77,6 +79,8 @@ export default function Items({
         name: '',
         type: 'stock',
         uom_id: '' as string,
+        sale_price: '' as string,
+        standard_cost: '' as string,
         valuation_method: '' as string,
         ...accountDefaults('stock'),
     });
@@ -149,8 +153,19 @@ export default function Items({
                                             </div>
                                         </div>
 
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div className="grid min-w-0 gap-1.5">
+                                                <Label htmlFor="sale_price">Bikri Rate <span className="text-muted-foreground font-normal">(Sale price)</span></Label>
+                                                <Input id="sale_price" type="number" min="0" step="any" placeholder="0" value={form.data.sale_price} onChange={(e) => form.setData('sale_price', e.target.value)} />
+                                            </div>
+                                            <div className="grid min-w-0 gap-1.5">
+                                                <Label htmlFor="standard_cost">Khareed Rate <span className="text-muted-foreground font-normal">(Cost)</span></Label>
+                                                <Input id="standard_cost" type="number" min="0" step="any" placeholder="0" value={form.data.standard_cost} onChange={(e) => form.setData('standard_cost', e.target.value)} />
+                                            </div>
+                                        </div>
+
                                         <p className="text-muted-foreground bg-muted/40 rounded-md px-3 py-2 text-xs">
-                                            ✓ The accounting (inventory, income &amp; cost accounts) is filled in automatically from the Type. Open <b>Advanced</b> only to change where it posts.
+                                            ✓ Bikri Rate Quick Sale mein khud bhar jata hai. Accounting (inventory, income &amp; cost accounts) Type se automatic set hoti hai — <b>Advanced</b> sirf tab kholein jab posting badalni ho.
                                         </p>
 
                                         <button type="button" onClick={() => setAdvanced((a) => !a)} className="text-muted-foreground hover:text-foreground flex w-fit items-center gap-1 text-xs font-medium">
@@ -223,7 +238,7 @@ export default function Items({
                                 <th>Name</th>
                                 <th className="w-28">Type</th>
                                 <th className="w-16">UOM</th>
-                                <th className="w-36">Valuation</th>
+                                <th className="w-28 text-right">Bikri Rate</th>
                                 <th className="w-28 text-right">On hand</th>
                                 <th className="w-36 text-right">Value</th>
                             </tr>
@@ -235,7 +250,7 @@ export default function Items({
                                     <td className="px-4 py-2.5">{i.name}</td>
                                     <td className="text-muted-foreground px-4 py-2.5 capitalize">{i.type.replace('_', ' ')}</td>
                                     <td className="px-4 py-2.5">{i.uom ?? '—'}</td>
-                                    <td className="px-4 py-2.5">{i.valuation}</td>
+                                    <td className="px-4 py-2.5 text-right font-mono tabular-nums">{i.sale_price ? money(i.sale_price) : '—'}</td>
                                     <td className="px-4 py-2.5 text-right font-mono tabular-nums">{i.qty ? money(i.qty) : '—'}</td>
                                     <td className="px-4 py-2.5 text-right font-mono tabular-nums">{i.value ? money(i.value) : '—'}</td>
                                 </tr>

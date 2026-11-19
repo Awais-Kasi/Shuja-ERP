@@ -101,7 +101,7 @@ export default function Dashboard({ kpis, stats, counts, trend, recent, topItems
 
     const quickActions: QuickAction[] = [
         { title: 'Nai Bikri', sub: 'Cash memo', href: '/sales/quick', icon: Zap, from: '#10b981', to: '#0f766e', permission: 'sales.invoice.post' },
-        { title: 'Nai Khareed', sub: 'Goods received', href: '/purchase/receipts/create', icon: PackageCheck, from: '#0ea5e9', to: '#2563eb', permission: 'purchase.grn.create' },
+        { title: 'Nai Khareed', sub: 'Quick purchase', href: '/purchase/quick', icon: PackageCheck, from: '#0ea5e9', to: '#2563eb', permission: 'purchase.bill.post' },
         { title: 'Paisa Aaya', sub: 'Customer receipt', href: '/sales/receipts/create', icon: HandCoins, from: '#8b5cf6', to: '#6d28d9', permission: 'sales.receipt.manage' },
         { title: 'Paisa Diya', sub: 'Supplier payment', href: '/purchase/payments/create', icon: Banknote, from: '#f43f5e', to: '#be185d', permission: 'purchase.payment.manage' },
         { title: 'Udhaar', sub: 'Lena / Dena', href: '/udhaar', icon: BookUser, from: '#6366f1', to: '#1e3a8a', permission: 'sales.order.manage' },

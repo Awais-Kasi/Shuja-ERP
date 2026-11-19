@@ -26,15 +26,15 @@ export default function ShowBill({ bill }: { bill: Bill }) {
                     {bill.journal_id && <Button asChild variant="outline"><Link href={`/accounting/journals/${bill.journal_id}`}>View journal</Link></Button>}
                 </div>
                 <dl className="grid grid-cols-2 gap-4 rounded-xl border p-4 sm:grid-cols-4">
-                    <div><dt className="text-muted-foreground text-xs uppercase">Invoice no.</dt><dd className="mt-0.5 text-sm">{bill.supplier_invoice_no ?? '—'}</dd></div>
-                    <div><dt className="text-muted-foreground text-xs uppercase">Due date</dt><dd className="mt-0.5 text-sm">{bill.due_date ?? '—'}</dd></div>
+                    <div><dt className="text-muted-foreground text-xs uppercase">Supplier Bill No.</dt><dd className="mt-0.5 text-sm">{bill.supplier_invoice_no ?? '—'}</dd></div>
+                    <div><dt className="text-muted-foreground text-xs uppercase">Due Date</dt><dd className="mt-0.5 text-sm">{bill.due_date ?? '—'}</dd></div>
                 </dl>
                 <div className="overflow-x-auto rounded-xl border">
                     <table className="w-full text-sm">
                         <thead className="bg-muted/50 text-muted-foreground">
                             <tr className="[&>th]:px-4 [&>th]:py-2.5 [&>th]:text-left [&>th]:font-medium">
-                                <th>Item / account</th>
-                                <th className="w-32 text-right">Quantity</th>
+                                <th>Maal / Account</th>
+                                <th className="w-32 text-right">Qty</th>
                                 <th className="w-32 text-right">Rate</th>
                                 <th className="w-36 text-right">Amount</th>
                             </tr>
@@ -52,9 +52,9 @@ export default function ShowBill({ bill }: { bill: Bill }) {
                     </table>
                 </div>
                 <div className="flex flex-col items-end gap-1.5 text-sm">
-                    <div className="flex w-64 justify-between"><span className="text-muted-foreground">Subtotal</span><span className="font-mono tabular-nums">{money(bill.subtotal)}</span></div>
-                    <div className="flex w-64 justify-between"><span className="text-muted-foreground">Input tax</span><span className="font-mono tabular-nums">{money(bill.tax_amount)}</span></div>
-                    <div className="flex w-64 justify-between border-t pt-1.5 text-base font-semibold"><span>Total payable</span><span className="font-mono tabular-nums">{money(bill.total)}</span></div>
+                    <div className="flex w-64 justify-between"><span className="text-muted-foreground">Maal ki keemat</span><span className="font-mono tabular-nums">{money(bill.subtotal)}</span></div>
+                    <div className="flex w-64 justify-between"><span className="text-muted-foreground">Tax</span><span className="font-mono tabular-nums">{money(bill.tax_amount)}</span></div>
+                    <div className="flex w-64 justify-between border-t pt-1.5 text-base font-semibold"><span>Kul (Dena hai)</span><span className="font-mono tabular-nums">{money(bill.total)}</span></div>
                 </div>
             </div>
         </>
