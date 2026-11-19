@@ -166,3 +166,54 @@
         @apply bg-background text-foreground;
     }
 }
+
+/* ------------------------------------------------------------------ */
+/* Print / Save-as-PDF: hide app chrome, print just the page content.  */
+/* Works on every screen via the toolbar "Print / PDF" button or Ctrl+P.*/
+/* ------------------------------------------------------------------ */
+.print-only {
+    display: none;
+}
+@media print {
+    /* Hide the menu, top bar, and anything marked .no-print */
+    [data-slot='sidebar'],
+    [data-slot='sidebar-rail'],
+    [data-slot='sidebar-inset'] > header,
+    .no-print {
+        display: none !important;
+    }
+
+    /* Main content fills the page */
+    [data-slot='sidebar-inset'] {
+        margin: 0 !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+    }
+
+    html,
+    body {
+        background: #fff !important;
+    }
+
+    /* Let tables and wide content print in full instead of clipping */
+    .overflow-x-auto,
+    .overflow-auto,
+    .overflow-y-auto {
+        overflow: visible !important;
+    }
+
+    /* Keep rows/cards from splitting across pages; drop link underlines */
+    tr,
+    thead {
+        break-inside: avoid;
+    }
+    a {
+        text-decoration: none !important;
+        color: inherit !important;
+    }
+
+    /* Print the report header block */
+    .print-only {
+        display: block !important;
+    }
+}
