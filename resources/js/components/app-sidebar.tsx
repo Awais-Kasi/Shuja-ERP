@@ -132,6 +132,7 @@ const navGroups: NavGroup[] = [
             { title: 'Employees', href: '/hr/employees', icon: Users, permission: 'hr.employee.view' },
             { title: 'Attendance', href: '/hr/attendance', icon: CalendarCheck, permission: 'hr.attendance.manage' },
             { title: 'Payroll', href: '/hr/payroll', icon: Wallet, permission: 'hr.payroll.run' },
+            { title: 'Daily Wages', href: '/hr/wages', icon: Coins, permission: 'hr.payroll.run' },
         ],
     },
     {

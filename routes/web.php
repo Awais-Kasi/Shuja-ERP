@@ -14,6 +14,7 @@ use App\Http\Controllers\FixedAssets\FixedAssetController;
 use App\Http\Controllers\Hr\AttendanceController;
 use App\Http\Controllers\Hr\EmployeeController;
 use App\Http\Controllers\Hr\PayrollRunController;
+use App\Http\Controllers\Hr\WageController;
 use App\Http\Controllers\Hr\PayrollSettingController;
 use App\Http\Controllers\Consignment\ConsignmentDispatchController;
 use App\Http\Controllers\Consignment\ConsignmentExpenseController;
@@ -338,6 +339,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('payroll/{run}/reverse', [PayrollRunController::class, 'reverse'])->middleware('can:hr.payroll.run')->name('payroll.reverse');
         Route::post('payroll/{run}/pay', [PayrollRunController::class, 'pay'])->middleware('can:hr.payroll.pay')->name('payroll.pay');
         Route::post('payroll-payments/{payment}/reverse', [PayrollRunController::class, 'reversePayment'])->middleware('can:hr.payroll.pay')->name('payroll.payments.reverse');
+
+        // Daily-wage (dihari) workers paid per unit (e.g. per KG) with a running wallet.
+        Route::get('wages', [WageController::class, 'index'])->middleware('can:hr.payroll.run')->name('wages.index');
+        Route::post('wages', [WageController::class, 'storeWorker'])->middleware('can:hr.payroll.run')->name('wages.store');
+        Route::get('wages/{worker}', [WageController::class, 'show'])->middleware('can:hr.payroll.run')->name('wages.show');
+        Route::post('wages/{worker}/work', [WageController::class, 'recordWork'])->middleware('can:hr.payroll.run')->name('wages.work');
+        Route::post('wages/{worker}/pay', [WageController::class, 'pay'])->middleware('can:hr.payroll.pay')->name('wages.pay');
     });
 });
 
