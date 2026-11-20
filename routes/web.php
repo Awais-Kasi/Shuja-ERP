@@ -6,42 +6,49 @@ use App\Http\Controllers\Accounting\JournalController;
 use App\Http\Controllers\Accounting\PeriodController;
 use App\Http\Controllers\Accounting\RecurringJournalController;
 use App\Http\Controllers\Accounting\ReportController;
+use App\Http\Controllers\Admin\AuditLogController;
+use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Banking\BankReconciliationController;
 use App\Http\Controllers\Budgeting\BudgetController;
 use App\Http\Controllers\CompanyController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\DayBookController;
-use App\Http\Controllers\UdhaarController;
-use App\Http\Controllers\FixedAssets\FixedAssetController;
-use App\Http\Controllers\Hr\AttendanceController;
-use App\Http\Controllers\Hr\EmployeeController;
-use App\Http\Controllers\Hr\PayrollRunController;
-use App\Http\Controllers\Hr\WageController;
-use App\Http\Controllers\Hr\PayrollSettingController;
 use App\Http\Controllers\Consignment\ConsignmentDispatchController;
 use App\Http\Controllers\Consignment\ConsignmentExpenseController;
 use App\Http\Controllers\Consignment\ConsignmentReportController;
 use App\Http\Controllers\Consignment\ConsignmentSettlementController;
 use App\Http\Controllers\Consignment\ConsignmentTripController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DayBookController;
+use App\Http\Controllers\FixedAssets\FixedAssetController;
+use App\Http\Controllers\Hr\AttendanceController;
+use App\Http\Controllers\Hr\EmployeeController;
+use App\Http\Controllers\Hr\PayrollRunController;
+use App\Http\Controllers\Hr\PayrollSettingController;
+use App\Http\Controllers\Hr\WageController;
 use App\Http\Controllers\Inventory\ItemController;
-use App\Http\Controllers\Payments\PaymentController;
-use App\Http\Controllers\Manufacturing\BomController;
-use App\Http\Controllers\Manufacturing\WorkOrderController;
 use App\Http\Controllers\Inventory\StockAdjustmentController;
 use App\Http\Controllers\Inventory\StockReportController;
 use App\Http\Controllers\Inventory\StockTransferController;
 use App\Http\Controllers\Inventory\UomController;
 use App\Http\Controllers\Inventory\WarehouseController;
+use App\Http\Controllers\Manufacturing\BomController;
+use App\Http\Controllers\Manufacturing\WorkOrderController;
+use App\Http\Controllers\Payments\PaymentController;
 use App\Http\Controllers\Purchasing\GoodsReceiptController;
 use App\Http\Controllers\Purchasing\PurchaseBillController;
-use App\Http\Controllers\Purchasing\QuickPurchaseController;
 use App\Http\Controllers\Purchasing\PurchaseOrderController;
 use App\Http\Controllers\Purchasing\PurchaseReportController;
+use App\Http\Controllers\Purchasing\PurchaseReturnController;
+use App\Http\Controllers\Purchasing\QuickPurchaseController;
 use App\Http\Controllers\Purchasing\SupplierController;
+use App\Http\Controllers\Reports\OperationalReportController;
 use App\Http\Controllers\Sales\CustomerController;
 use App\Http\Controllers\Sales\SalesInvoiceController;
 use App\Http\Controllers\Sales\SalesOrderController;
 use App\Http\Controllers\Sales\SalesReportController;
+use App\Http\Controllers\Sales\SalesReturnController;
+use App\Http\Controllers\SearchController;
+use App\Http\Controllers\UdhaarController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -71,7 +78,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Everyday "easy" screens
     Route::get('udhaar', [UdhaarController::class, 'index'])->middleware('can:sales.order.manage')->name('udhaar');
     Route::get('day-book', [DayBookController::class, 'index'])->middleware('can:accounting.report.view')->name('day-book');
-    Route::get('search', [\App\Http\Controllers\SearchController::class, 'index'])->name('search');
+    Route::get('search', [SearchController::class, 'index'])->name('search');
 
     // Active-company switching
     Route::post('companies/switch', [CompanyController::class, 'switch'])->name('companies.switch');
@@ -173,11 +180,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('purchase-register', [PurchaseReportController::class, 'register'])->middleware('can:purchase.order.manage')->name('purchase-register');
 
         // Purchase returns (debit notes)
-        Route::get('returns', [\App\Http\Controllers\Purchasing\PurchaseReturnController::class, 'index'])->middleware('can:purchase.return.create')->name('returns.index');
-        Route::get('returns/create', [\App\Http\Controllers\Purchasing\PurchaseReturnController::class, 'create'])->middleware('can:purchase.return.create')->name('returns.create');
-        Route::post('returns', [\App\Http\Controllers\Purchasing\PurchaseReturnController::class, 'store'])->middleware('can:purchase.return.create')->name('returns.store');
-        Route::get('returns/{return}', [\App\Http\Controllers\Purchasing\PurchaseReturnController::class, 'show'])->middleware('can:purchase.return.create')->name('returns.show');
-        Route::post('returns/{return}/reverse', [\App\Http\Controllers\Purchasing\PurchaseReturnController::class, 'reverse'])->middleware('can:purchase.return.create')->name('returns.reverse');
+        Route::get('returns', [PurchaseReturnController::class, 'index'])->middleware('can:purchase.return.create')->name('returns.index');
+        Route::get('returns/create', [PurchaseReturnController::class, 'create'])->middleware('can:purchase.return.create')->name('returns.create');
+        Route::post('returns', [PurchaseReturnController::class, 'store'])->middleware('can:purchase.return.create')->name('returns.store');
+        Route::get('returns/{return}', [PurchaseReturnController::class, 'show'])->middleware('can:purchase.return.create')->name('returns.show');
+        Route::post('returns/{return}/reverse', [PurchaseReturnController::class, 'reverse'])->middleware('can:purchase.return.create')->name('returns.reverse');
 
         // Supplier payments (AP settlement)
         Route::get('payments', [PaymentController::class, 'index'])->defaults('direction', 'pay')->middleware('can:purchase.payment.manage')->name('payments.index');
@@ -212,11 +219,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('sales-register', [SalesReportController::class, 'register'])->middleware('can:sales.order.manage')->name('sales-register');
 
         // Sales returns (credit notes)
-        Route::get('returns', [\App\Http\Controllers\Sales\SalesReturnController::class, 'index'])->middleware('can:sales.return.create')->name('returns.index');
-        Route::get('returns/create', [\App\Http\Controllers\Sales\SalesReturnController::class, 'create'])->middleware('can:sales.return.create')->name('returns.create');
-        Route::post('returns', [\App\Http\Controllers\Sales\SalesReturnController::class, 'store'])->middleware('can:sales.return.create')->name('returns.store');
-        Route::get('returns/{return}', [\App\Http\Controllers\Sales\SalesReturnController::class, 'show'])->middleware('can:sales.return.create')->name('returns.show');
-        Route::post('returns/{return}/reverse', [\App\Http\Controllers\Sales\SalesReturnController::class, 'reverse'])->middleware('can:sales.return.create')->name('returns.reverse');
+        Route::get('returns', [SalesReturnController::class, 'index'])->middleware('can:sales.return.create')->name('returns.index');
+        Route::get('returns/create', [SalesReturnController::class, 'create'])->middleware('can:sales.return.create')->name('returns.create');
+        Route::post('returns', [SalesReturnController::class, 'store'])->middleware('can:sales.return.create')->name('returns.store');
+        Route::get('returns/{return}', [SalesReturnController::class, 'show'])->middleware('can:sales.return.create')->name('returns.show');
+        Route::post('returns/{return}/reverse', [SalesReturnController::class, 'reverse'])->middleware('can:sales.return.create')->name('returns.reverse');
 
         // Customer receipts (AR settlement)
         Route::get('receipts', [PaymentController::class, 'index'])->defaults('direction', 'receive')->middleware('can:sales.receipt.manage')->name('receipts.index');
@@ -304,32 +311,32 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Operational reports — aging & inventory
     Route::prefix('reports')->name('reports.')->group(function () {
-        Route::get('/', [\App\Http\Controllers\Reports\OperationalReportController::class, 'hub'])->middleware('can:dashboard.view')->name('hub');
-        Route::get('aged-receivables', [\App\Http\Controllers\Reports\OperationalReportController::class, 'agedReceivables'])->middleware('can:accounting.report.view')->name('aged-receivables');
-        Route::get('aged-payables', [\App\Http\Controllers\Reports\OperationalReportController::class, 'agedPayables'])->middleware('can:accounting.report.view')->name('aged-payables');
-        Route::get('inventory-valuation', [\App\Http\Controllers\Reports\OperationalReportController::class, 'inventoryValuation'])->middleware('can:inventory.valuation.view')->name('inventory-valuation');
-        Route::get('stock-aging', [\App\Http\Controllers\Reports\OperationalReportController::class, 'stockAging'])->middleware('can:inventory.valuation.view')->name('stock-aging');
-        Route::get('sales-tax', [\App\Http\Controllers\Reports\OperationalReportController::class, 'salesTax'])->middleware('can:accounting.report.view')->name('sales-tax');
+        Route::get('/', [OperationalReportController::class, 'hub'])->middleware('can:dashboard.view')->name('hub');
+        Route::get('aged-receivables', [OperationalReportController::class, 'agedReceivables'])->middleware('can:accounting.report.view')->name('aged-receivables');
+        Route::get('aged-payables', [OperationalReportController::class, 'agedPayables'])->middleware('can:accounting.report.view')->name('aged-payables');
+        Route::get('inventory-valuation', [OperationalReportController::class, 'inventoryValuation'])->middleware('can:inventory.valuation.view')->name('inventory-valuation');
+        Route::get('stock-aging', [OperationalReportController::class, 'stockAging'])->middleware('can:inventory.valuation.view')->name('stock-aging');
+        Route::get('sales-tax', [OperationalReportController::class, 'salesTax'])->middleware('can:accounting.report.view')->name('sales-tax');
     });
 
     // Administration
     Route::prefix('admin')->name('admin.')->group(function () {
-        Route::get('users', [\App\Http\Controllers\Admin\UserController::class, 'index'])->middleware('can:user.manage')->name('users.index');
-        Route::post('users', [\App\Http\Controllers\Admin\UserController::class, 'store'])->middleware('can:user.manage')->name('users.store');
-        Route::put('users/{user}', [\App\Http\Controllers\Admin\UserController::class, 'update'])->middleware('can:user.manage')->name('users.update');
-        Route::post('users/{user}/reset-password', [\App\Http\Controllers\Admin\UserController::class, 'resetPassword'])->middleware('can:user.manage')->name('users.reset-password');
-        Route::delete('users/{user}', [\App\Http\Controllers\Admin\UserController::class, 'destroy'])->middleware('can:user.manage')->name('users.destroy');
+        Route::get('users', [UserController::class, 'index'])->middleware('can:user.manage')->name('users.index');
+        Route::post('users', [UserController::class, 'store'])->middleware('can:user.manage')->name('users.store');
+        Route::put('users/{user}', [UserController::class, 'update'])->middleware('can:user.manage')->name('users.update');
+        Route::post('users/{user}/reset-password', [UserController::class, 'resetPassword'])->middleware('can:user.manage')->name('users.reset-password');
+        Route::delete('users/{user}', [UserController::class, 'destroy'])->middleware('can:user.manage')->name('users.destroy');
 
-        Route::get('roles', [\App\Http\Controllers\Admin\RoleController::class, 'index'])->middleware('can:role.manage')->name('roles.index');
-        Route::post('roles', [\App\Http\Controllers\Admin\RoleController::class, 'store'])->middleware('can:role.manage')->name('roles.store');
-        Route::put('roles/{role}', [\App\Http\Controllers\Admin\RoleController::class, 'update'])->middleware('can:role.manage')->name('roles.update');
-        Route::delete('roles/{role}', [\App\Http\Controllers\Admin\RoleController::class, 'destroy'])->middleware('can:role.manage')->name('roles.destroy');
+        Route::get('roles', [RoleController::class, 'index'])->middleware('can:role.manage')->name('roles.index');
+        Route::post('roles', [RoleController::class, 'store'])->middleware('can:role.manage')->name('roles.store');
+        Route::put('roles/{role}', [RoleController::class, 'update'])->middleware('can:role.manage')->name('roles.update');
+        Route::delete('roles/{role}', [RoleController::class, 'destroy'])->middleware('can:role.manage')->name('roles.destroy');
 
-        Route::get('companies', [\App\Http\Controllers\Admin\CompanyController::class, 'index'])->middleware('can:company.manage')->name('companies.index');
-        Route::post('companies', [\App\Http\Controllers\Admin\CompanyController::class, 'store'])->middleware('can:company.manage')->name('companies.store');
-        Route::put('companies/{company}', [\App\Http\Controllers\Admin\CompanyController::class, 'update'])->middleware('can:company.manage')->name('companies.update');
+        Route::get('companies', [App\Http\Controllers\Admin\CompanyController::class, 'index'])->middleware('can:company.manage')->name('companies.index');
+        Route::post('companies', [App\Http\Controllers\Admin\CompanyController::class, 'store'])->middleware('can:company.manage')->name('companies.store');
+        Route::put('companies/{company}', [App\Http\Controllers\Admin\CompanyController::class, 'update'])->middleware('can:company.manage')->name('companies.update');
 
-        Route::get('audit', [\App\Http\Controllers\Admin\AuditLogController::class, 'index'])->middleware('can:audit.view')->name('audit.index');
+        Route::get('audit', [AuditLogController::class, 'index'])->middleware('can:audit.view')->name('audit.index');
     });
 
     // HR & Payroll (Phase 7)

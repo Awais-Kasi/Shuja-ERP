@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Customer;
 use App\Models\Supplier;
 use App\Support\Tenancy\TenantManager;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -63,7 +64,7 @@ class UdhaarController extends Controller
                 'name' => $r->name,
                 'phone' => $r->phone,
                 'balance' => round((float) $r->bal, 2),
-                'last_date' => $r->last_date ? \Illuminate\Support\Carbon::parse($r->last_date)->toDateString() : null,
+                'last_date' => $r->last_date ? Carbon::parse($r->last_date)->toDateString() : null,
             ])
             ->all();
     }

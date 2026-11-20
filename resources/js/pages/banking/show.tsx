@@ -179,7 +179,7 @@ function AdjustDialog({ reconciliationId, contraAccounts, defaults, today, onDon
                 </div>
                 <div className="grid gap-1.5"><Label>Date</Label><Input type="date" value={form.data.date} onChange={(e) => form.setData('date', e.target.value)} />{err('date')}</div>
                 <div className="grid gap-1.5"><Label>Memo</Label><Input value={form.data.memo} onChange={(e) => form.setData('memo', e.target.value)} placeholder="Optional" />{err('memo')}</div>
-                {form.errors.adjust && <p className="text-destructive text-xs">{form.errors.adjust}</p>}
+                {(form.errors as Record<string, string>).adjust && <p className="text-destructive text-xs">{(form.errors as Record<string, string>).adjust}</p>}
                 <DialogFooter><Button type="submit" disabled={form.processing}>Post adjustment</Button></DialogFooter>
             </form>
         </DialogContent>

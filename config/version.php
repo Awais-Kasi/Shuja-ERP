@@ -16,6 +16,6 @@
 */
 
 return [
-    'number' => '1.6.0',
+    'number' => '1.6.1',
     'released_on' => '2026-11-20',
 ];

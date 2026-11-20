@@ -66,10 +66,10 @@ export default function PeriodsIndex({ years }: { years: Year[] }) {
                                     {p.status === 'locked'
                                         ? (canLock && y.status !== 'closed'
                                             ? <Button size="icon" variant="ghost" title="Reopen period" onClick={() => lock(p)}><Lock className="size-4 text-rose-500" /></Button>
-                                            : <Lock className="text-muted-foreground/50 size-4" title="Locked" />)
+                                            : <span title="Locked"><Lock className="text-muted-foreground/50 size-4" /></span>)
                                         : (canLock
                                             ? <Button size="icon" variant="ghost" title="Lock period" onClick={() => lock(p)}><LockOpen className="size-4 text-emerald-500" /></Button>
-                                            : <LockOpen className="text-muted-foreground/50 size-4" title="Open" />)}
+                                            : <span title="Open"><LockOpen className="text-muted-foreground/50 size-4" /></span>)}
                                 </div>
                             ))}
                         </div>

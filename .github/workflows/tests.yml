@@ -23,16 +23,32 @@ jobs:
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
         with:
           php-version: '8.4'
+          extensions: mbstring, intl, gmp, bcmath, dom, xml, tokenizer, ctype, curl, fileinfo, openssl, gd, zip, pdo_pgsql, pgsql, pdo_sqlite, sqlite3, iconv, sodium
           tools: composer:v2
           coverage: none
+
+      - name: Install PHP dependencies
+        run: |
+          cp .env.example .env
+          composer install --prefer-dist --no-interaction
+          php artisan key:generate
 
       - name: Setup Node
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: '22'
 
-      - name: Setup Application
-        run: composer setup
+      # Build the front-end — this also runs the Wayfinder generator, which the
+      # TypeScript check below needs for its generated route/action types.
+      - name: Build front-end assets
+        run: |
+          npm ci
+          npm run build
 
-      - name: Run CI Checks
-        run: composer ci:check
+      - name: TypeScript check
+        run: npm run types:check
+
+      # The test suite runs on an in-memory SQLite database (see phpunit.xml), so
+      # it needs no external database service here.
+      - name: Run tests
+        run: php artisan test
