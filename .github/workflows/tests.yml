@@ -38,17 +38,27 @@ jobs:
         with:
           node-version: '22'
 
-      # Build the front-end — this also runs the Wayfinder generator, which the
-      # TypeScript check below needs for its generated route/action types.
+      - name: Install JS dependencies
+        run: npm ci
+
+      # ---- Quality gates (PHPStan is intentionally excluded: the codebase has a
+      # large pre-existing Larastan level-7 backlog that is a separate cleanup). ----
+
+      - name: PHP code style (Pint)
+        run: vendor/bin/pint --test
+
+      - name: JS/TS lint & format (vp check)
+        run: npm run check
+
+      # Build the front-end — this also runs the Wayfinder generator, whose
+      # generated route/action types the TypeScript check below depends on.
       - name: Build front-end assets
-        run: |
-          npm ci
-          npm run build
+        run: npm run build
 
       - name: TypeScript check
         run: npm run types:check
 
-      # The test suite runs on an in-memory SQLite database (see phpunit.xml), so
-      # it needs no external database service here.
-      - name: Run tests
+      # The suite runs on an in-memory SQLite database (see phpunit.xml), so it
+      # needs no external database service here.
+      - name: Tests
         run: php artisan test
