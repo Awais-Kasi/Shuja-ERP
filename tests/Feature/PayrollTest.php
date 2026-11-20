@@ -9,7 +9,6 @@ use App\Models\Company;
 use App\Models\CostCenter;
 use App\Models\Employee;
 use App\Models\FiscalYear;
-use App\Models\PayrollRun;
 use App\Models\PayrollSetting;
 use App\Payroll\HrException;
 use App\Payroll\PayrollCalculator;

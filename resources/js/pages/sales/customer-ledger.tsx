@@ -3,14 +3,25 @@ import { money } from '@/lib/format';
 
 type Row = { id: number; code: string; name: string; receivable: number };
 
-export default function CustomerLedger({ rows, total }: { rows: Row[]; total: number }) {
+export default function CustomerLedger({
+    rows,
+    total,
+}: {
+    rows: Row[];
+    total: number;
+}) {
     return (
         <>
             <Head title="Customer Khata" />
             <div className="flex h-full flex-1 flex-col gap-6 p-4 md:p-6">
                 <div>
-                    <h1 className="text-2xl font-semibold tracking-tight">Customer Khata</h1>
-                    <p className="text-muted-foreground text-sm">Money owed to you, by customer — click a customer to see their full statement.</p>
+                    <h1 className="text-2xl font-semibold tracking-tight">
+                        Customer Khata
+                    </h1>
+                    <p className="text-muted-foreground text-sm">
+                        Money owed to you, by customer — click a customer to see
+                        their full statement.
+                    </p>
                 </div>
                 <div className="overflow-x-auto rounded-xl border">
                     <table className="w-full text-sm">
@@ -22,17 +33,45 @@ export default function CustomerLedger({ rows, total }: { rows: Row[]; total: nu
                             </tr>
                         </thead>
                         <tbody className="divide-y">
-                            {rows.length === 0 && <tr><td colSpan={3} className="text-muted-foreground px-4 py-10 text-center">No outstanding receivables.</td></tr>}
+                            {rows.length === 0 && (
+                                <tr>
+                                    <td
+                                        colSpan={3}
+                                        className="text-muted-foreground px-4 py-10 text-center"
+                                    >
+                                        No outstanding receivables.
+                                    </td>
+                                </tr>
+                            )}
                             {rows.map((r) => (
-                                <tr key={r.id} onClick={() => router.visit(`/sales/customer-ledger/${r.id}`)} className="hover:bg-muted/40 cursor-pointer">
-                                    <td className="px-4 py-2.5 font-mono text-xs">{r.code}</td>
+                                <tr
+                                    key={r.id}
+                                    onClick={() =>
+                                        router.visit(
+                                            `/sales/customer-ledger/${r.id}`,
+                                        )
+                                    }
+                                    className="hover:bg-muted/40 cursor-pointer"
+                                >
+                                    <td className="px-4 py-2.5 font-mono text-xs">
+                                        {r.code}
+                                    </td>
                                     <td className="px-4 py-2.5">{r.name}</td>
-                                    <td className="px-4 py-2.5 text-right font-mono tabular-nums">{money(r.receivable)}</td>
+                                    <td className="px-4 py-2.5 text-right font-mono tabular-nums">
+                                        {money(r.receivable)}
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>
                         <tfoot className="border-t-2 font-semibold">
-                            <tr className="[&>td]:px-4 [&>td]:py-3"><td colSpan={2} className="text-right">Total receivable</td><td className="text-right font-mono tabular-nums">{money(total)}</td></tr>
+                            <tr className="[&>td]:px-4 [&>td]:py-3">
+                                <td colSpan={2} className="text-right">
+                                    Total receivable
+                                </td>
+                                <td className="text-right font-mono tabular-nums">
+                                    {money(total)}
+                                </td>
+                            </tr>
                         </tfoot>
                     </table>
                 </div>

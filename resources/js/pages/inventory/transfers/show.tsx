@@ -23,13 +23,21 @@ export default function ShowTransfer({ transfer }: { transfer: Transfer }) {
             <Head title={`Transfer ${transfer.number ?? ''}`} />
             <div className="flex h-full flex-1 flex-col gap-6 p-4 md:p-6">
                 <div className="flex items-center gap-3">
-                    <Button asChild variant="ghost" size="icon"><Link href="/inventory/transfers"><ArrowLeft className="size-4" /></Link></Button>
+                    <Button asChild variant="ghost" size="icon">
+                        <Link href="/inventory/transfers">
+                            <ArrowLeft className="size-4" />
+                        </Link>
+                    </Button>
                     <div>
                         <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
                             {transfer.number}
-                            <Badge variant="secondary" className="capitalize">{transfer.status}</Badge>
+                            <Badge variant="secondary" className="capitalize">
+                                {transfer.status}
+                            </Badge>
                         </h1>
-                        <p className="text-muted-foreground text-sm">{transfer.date}</p>
+                        <p className="text-muted-foreground text-sm">
+                            {transfer.date}
+                        </p>
                     </div>
                 </div>
 
@@ -37,7 +45,11 @@ export default function ShowTransfer({ transfer }: { transfer: Transfer }) {
                     <span className="font-medium">{transfer.from}</span>
                     <ArrowRight className="text-muted-foreground size-4" />
                     <span className="font-medium">{transfer.to}</span>
-                    {transfer.memo && <span className="text-muted-foreground ml-auto">{transfer.memo}</span>}
+                    {transfer.memo && (
+                        <span className="text-muted-foreground ml-auto">
+                            {transfer.memo}
+                        </span>
+                    )}
                 </div>
 
                 <div className="overflow-x-auto rounded-xl border">
@@ -53,8 +65,12 @@ export default function ShowTransfer({ transfer }: { transfer: Transfer }) {
                             {transfer.lines.map((l, i) => (
                                 <tr key={i}>
                                     <td className="px-4 py-2.5">{l.item}</td>
-                                    <td className="px-4 py-2.5 text-right font-mono tabular-nums">{money(l.quantity)}</td>
-                                    <td className="text-muted-foreground px-4 py-2.5">{l.description ?? '—'}</td>
+                                    <td className="px-4 py-2.5 text-right font-mono tabular-nums">
+                                        {money(l.quantity)}
+                                    </td>
+                                    <td className="text-muted-foreground px-4 py-2.5">
+                                        {l.description ?? '—'}
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>

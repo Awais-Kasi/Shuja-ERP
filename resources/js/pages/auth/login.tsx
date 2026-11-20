@@ -45,10 +45,16 @@ export default function Login({ status, canResetPassword }: Props) {
                 {({ processing, errors }) => (
                     <>
                         <div className="grid gap-6">
-                            <div className="auth-anim grid gap-2" style={{ animation: 'authRise .5s ease-out .18s both' }}>
+                            <div
+                                className="auth-anim grid gap-2"
+                                style={{
+                                    animation:
+                                        'authRise .5s ease-out .18s both',
+                                }}
+                            >
                                 <Label htmlFor="email">Email address</Label>
                                 <div className="relative">
-                                    <Mail className="text-muted-foreground pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2" />
+                                    <Mail className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
                                     <Input
                                         id="email"
                                         type="email"
@@ -64,7 +70,13 @@ export default function Login({ status, canResetPassword }: Props) {
                                 <InputError message={errors.email} />
                             </div>
 
-                            <div className="auth-anim grid gap-2" style={{ animation: 'authRise .5s ease-out .26s both' }}>
+                            <div
+                                className="auth-anim grid gap-2"
+                                style={{
+                                    animation:
+                                        'authRise .5s ease-out .26s both',
+                                }}
+                            >
                                 <div className="flex items-center">
                                     <Label htmlFor="password">Password</Label>
                                     {canResetPassword && (
@@ -88,7 +100,13 @@ export default function Login({ status, canResetPassword }: Props) {
                                 <InputError message={errors.password} />
                             </div>
 
-                            <div className="auth-anim flex items-center space-x-3" style={{ animation: 'authRise .5s ease-out .34s both' }}>
+                            <div
+                                className="auth-anim flex items-center space-x-3"
+                                style={{
+                                    animation:
+                                        'authRise .5s ease-out .34s both',
+                                }}
+                            >
                                 <Checkbox
                                     id="remember"
                                     name="remember"
@@ -100,13 +118,20 @@ export default function Login({ status, canResetPassword }: Props) {
                             <Button
                                 type="submit"
                                 className="auth-btn mt-2 w-full border-0 text-white transition-transform hover:-translate-y-0.5"
-                                style={{ backgroundImage: 'linear-gradient(90deg,#4f46e5,#7c3aed,#4f46e5)' }}
+                                style={{
+                                    backgroundImage:
+                                        'linear-gradient(90deg,#4f46e5,#7c3aed,#4f46e5)',
+                                }}
                                 tabIndex={4}
                                 disabled={processing}
                                 data-test="login-button"
                             >
                                 <span className="sheen" />
-                                {processing ? <Spinner /> : <LogIn className="size-4" />}
+                                {processing ? (
+                                    <Spinner />
+                                ) : (
+                                    <LogIn className="size-4" />
+                                )}
                                 Log in
                             </Button>
                         </div>

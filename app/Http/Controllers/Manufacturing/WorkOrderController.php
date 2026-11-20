@@ -7,8 +7,8 @@ use App\Inventory\InventoryException;
 use App\Ledger\PostingException;
 use App\Manufacturing\ManufacturingException;
 use App\Manufacturing\ProductionService;
-use App\Models\Account;
 use App\Models\Bom;
+use App\Models\NumberSequence;
 use App\Models\Warehouse;
 use App\Models\WorkOrder;
 use App\Support\Tenancy\TenantManager;
@@ -149,11 +149,11 @@ class WorkOrderController extends Controller
 
     private function allocateNumber(TenantManager $tenant): string
     {
-        \App\Models\NumberSequence::firstOrCreate(
+        NumberSequence::firstOrCreate(
             ['company_id' => $tenant->id(), 'key' => 'work_order'],
             ['prefix' => 'WO-', 'padding' => 5, 'next_number' => 1],
         );
 
-        return \App\Models\NumberSequence::next('work_order');
+        return NumberSequence::next('work_order');
     }
 }

@@ -9,6 +9,7 @@ use App\Models\CostCenter;
 use App\Models\Employee;
 use App\Models\FiscalYear;
 use App\Models\PayrollRun;
+use App\Models\PayrollTaxSlab;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
@@ -223,6 +224,6 @@ class HrHttpTest extends TestCase
         ])->assertSessionHasNoErrors();
 
         $this->assertDatabaseHas('payroll_settings', ['company_id' => $this->company->id]);
-        $this->assertSame(2, \App\Models\PayrollTaxSlab::where('company_id', $this->company->id)->count());
+        $this->assertSame(2, PayrollTaxSlab::where('company_id', $this->company->id)->count());
     }
 }

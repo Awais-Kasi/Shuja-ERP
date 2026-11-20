@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Companies\CompanyProvisioner;
 use App\Http\Controllers\Controller;
 use App\Models\Company;
+use App\Models\Currency;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -28,7 +29,7 @@ class CompanyController extends Controller
 
         return Inertia::render('admin/companies/index', [
             'companies' => $companies,
-            'currencies' => \App\Models\Currency::where('is_active', true)->orderBy('code')->pluck('code'),
+            'currencies' => Currency::where('is_active', true)->orderBy('code')->pluck('code'),
         ]);
     }
 

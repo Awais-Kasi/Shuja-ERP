@@ -6,8 +6,18 @@ import { money } from '@/lib/format';
 
 type Line = { label: string; quantity: number; rate: number; amount: number };
 type Bill = {
-    id: number; number: string | null; supplier_invoice_no: string | null; date: string; due_date: string | null;
-    supplier: string; status: string; subtotal: number; tax_amount: number; total: number; journal_id: number | null; lines: Line[];
+    id: number;
+    number: string | null;
+    supplier_invoice_no: string | null;
+    date: string;
+    due_date: string | null;
+    supplier: string;
+    status: string;
+    subtotal: number;
+    tax_amount: number;
+    total: number;
+    journal_id: number | null;
+    lines: Line[];
 };
 
 export default function ShowBill({ bill }: { bill: Bill }) {
@@ -17,17 +27,53 @@ export default function ShowBill({ bill }: { bill: Bill }) {
             <div className="flex h-full flex-1 flex-col gap-6 p-4 md:p-6">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
-                        <Button asChild variant="ghost" size="icon"><Link href="/purchase/bills"><ArrowLeft className="size-4" /></Link></Button>
+                        <Button asChild variant="ghost" size="icon">
+                            <Link href="/purchase/bills">
+                                <ArrowLeft className="size-4" />
+                            </Link>
+                        </Button>
                         <div>
-                            <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">{bill.number}<Badge variant="secondary" className="capitalize">{bill.status}</Badge></h1>
-                            <p className="text-muted-foreground text-sm">{bill.supplier} · {bill.date}</p>
+                            <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
+                                {bill.number}
+                                <Badge
+                                    variant="secondary"
+                                    className="capitalize"
+                                >
+                                    {bill.status}
+                                </Badge>
+                            </h1>
+                            <p className="text-muted-foreground text-sm">
+                                {bill.supplier} · {bill.date}
+                            </p>
                         </div>
                     </div>
-                    {bill.journal_id && <Button asChild variant="outline"><Link href={`/accounting/journals/${bill.journal_id}`}>View journal</Link></Button>}
+                    {bill.journal_id && (
+                        <Button asChild variant="outline">
+                            <Link
+                                href={`/accounting/journals/${bill.journal_id}`}
+                            >
+                                View journal
+                            </Link>
+                        </Button>
+                    )}
                 </div>
                 <dl className="grid grid-cols-2 gap-4 rounded-xl border p-4 sm:grid-cols-4">
-                    <div><dt className="text-muted-foreground text-xs uppercase">Supplier Bill No.</dt><dd className="mt-0.5 text-sm">{bill.supplier_invoice_no ?? '—'}</dd></div>
-                    <div><dt className="text-muted-foreground text-xs uppercase">Due Date</dt><dd className="mt-0.5 text-sm">{bill.due_date ?? '—'}</dd></div>
+                    <div>
+                        <dt className="text-muted-foreground text-xs uppercase">
+                            Supplier Bill No.
+                        </dt>
+                        <dd className="mt-0.5 text-sm">
+                            {bill.supplier_invoice_no ?? '—'}
+                        </dd>
+                    </div>
+                    <div>
+                        <dt className="text-muted-foreground text-xs uppercase">
+                            Due Date
+                        </dt>
+                        <dd className="mt-0.5 text-sm">
+                            {bill.due_date ?? '—'}
+                        </dd>
+                    </div>
                 </dl>
                 <div className="overflow-x-auto rounded-xl border">
                     <table className="w-full text-sm">
@@ -43,18 +89,41 @@ export default function ShowBill({ bill }: { bill: Bill }) {
                             {bill.lines.map((l, i) => (
                                 <tr key={i}>
                                     <td className="px-4 py-2.5">{l.label}</td>
-                                    <td className="px-4 py-2.5 text-right font-mono tabular-nums">{money(l.quantity)}</td>
-                                    <td className="px-4 py-2.5 text-right font-mono tabular-nums">{money(l.rate)}</td>
-                                    <td className="px-4 py-2.5 text-right font-mono tabular-nums">{money(l.amount)}</td>
+                                    <td className="px-4 py-2.5 text-right font-mono tabular-nums">
+                                        {money(l.quantity)}
+                                    </td>
+                                    <td className="px-4 py-2.5 text-right font-mono tabular-nums">
+                                        {money(l.rate)}
+                                    </td>
+                                    <td className="px-4 py-2.5 text-right font-mono tabular-nums">
+                                        {money(l.amount)}
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
                 </div>
                 <div className="flex flex-col items-end gap-1.5 text-sm">
-                    <div className="flex w-64 justify-between"><span className="text-muted-foreground">Maal ki keemat</span><span className="font-mono tabular-nums">{money(bill.subtotal)}</span></div>
-                    <div className="flex w-64 justify-between"><span className="text-muted-foreground">Tax</span><span className="font-mono tabular-nums">{money(bill.tax_amount)}</span></div>
-                    <div className="flex w-64 justify-between border-t pt-1.5 text-base font-semibold"><span>Kul (Dena hai)</span><span className="font-mono tabular-nums">{money(bill.total)}</span></div>
+                    <div className="flex w-64 justify-between">
+                        <span className="text-muted-foreground">
+                            Maal ki keemat
+                        </span>
+                        <span className="font-mono tabular-nums">
+                            {money(bill.subtotal)}
+                        </span>
+                    </div>
+                    <div className="flex w-64 justify-between">
+                        <span className="text-muted-foreground">Tax</span>
+                        <span className="font-mono tabular-nums">
+                            {money(bill.tax_amount)}
+                        </span>
+                    </div>
+                    <div className="flex w-64 justify-between border-t pt-1.5 text-base font-semibold">
+                        <span>Kul (Dena hai)</span>
+                        <span className="font-mono tabular-nums">
+                            {money(bill.total)}
+                        </span>
+                    </div>
                 </div>
             </div>
         </>

@@ -31,7 +31,10 @@ export function GlobalSearch() {
         setLoading(true);
         const t = setTimeout(() => {
             const ctrl = new AbortController();
-            fetch(`/search?q=${encodeURIComponent(term)}`, { headers: { Accept: 'application/json' }, signal: ctrl.signal })
+            fetch(`/search?q=${encodeURIComponent(term)}`, {
+                headers: { Accept: 'application/json' },
+                signal: ctrl.signal,
+            })
                 .then((r) => (r.ok ? r.json() : { results: [] }))
                 .then((d: { results: Result[] }) => {
                     setResults(d.results ?? []);
@@ -45,7 +48,8 @@ export function GlobalSearch() {
     // Close on outside click.
     useEffect(() => {
         const onClick = (e: MouseEvent) => {
-            if (boxRef.current && !boxRef.current.contains(e.target as Node)) setOpen(false);
+            if (boxRef.current && !boxRef.current.contains(e.target as Node))
+                setOpen(false);
         };
         document.addEventListener('mousedown', onClick);
         return () => document.removeEventListener('mousedown', onClick);
@@ -61,7 +65,7 @@ export function GlobalSearch() {
     return (
         <div ref={boxRef} className="no-print relative w-full max-w-xs">
             <div className="relative">
-                <Search className="text-muted-foreground pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2" />
+                <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2" />
                 <input
                     type="text"
                     value={q}
@@ -71,11 +75,12 @@ export function GlobalSearch() {
                     }}
                     onFocus={() => setOpen(true)}
                     onKeyDown={(e) => {
-                        if (e.key === 'Enter' && results[0]) go(results[0].href);
+                        if (e.key === 'Enter' && results[0])
+                            go(results[0].href);
                         if (e.key === 'Escape') setOpen(false);
                     }}
                     placeholder="Dhoondo… (customer, item, bill)"
-                    className="border-input bg-background h-9 w-full rounded-lg border pl-8 pr-8 text-sm shadow-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                    className="border-input bg-background focus-visible:ring-ring h-9 w-full rounded-lg border pr-8 pl-8 text-sm shadow-sm focus-visible:ring-2 focus-visible:outline-none"
                 />
                 {q && (
                     <button
@@ -84,7 +89,7 @@ export function GlobalSearch() {
                             setQ('');
                             setResults([]);
                         }}
-                        className="text-muted-foreground hover:text-foreground absolute right-2 top-1/2 -translate-y-1/2"
+                        className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2 -translate-y-1/2"
                     >
                         <X className="size-4" />
                     </button>
@@ -93,9 +98,15 @@ export function GlobalSearch() {
 
             {open && q.trim().length >= 2 && (
                 <div className="bg-popover absolute z-50 mt-1 w-full overflow-hidden rounded-xl border shadow-lg">
-                    {loading && <div className="text-muted-foreground px-3 py-3 text-sm">Dhoondh raha hai…</div>}
+                    {loading && (
+                        <div className="text-muted-foreground px-3 py-3 text-sm">
+                            Dhoondh raha hai…
+                        </div>
+                    )}
                     {!loading && results.length === 0 && (
-                        <div className="text-muted-foreground px-3 py-3 text-sm">Kuch nahi mila.</div>
+                        <div className="text-muted-foreground px-3 py-3 text-sm">
+                            Kuch nahi mila.
+                        </div>
                     )}
                     {!loading &&
                         results.map((r, i) => (
@@ -106,10 +117,20 @@ export function GlobalSearch() {
                                 className="hover:bg-muted flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm"
                             >
                                 <span className="min-w-0 truncate">
-                                    <span className="font-medium">{r.label}</span>
-                                    {r.sub && <span className="text-muted-foreground ml-1.5 font-mono text-xs">{r.sub}</span>}
+                                    <span className="font-medium">
+                                        {r.label}
+                                    </span>
+                                    {r.sub && (
+                                        <span className="text-muted-foreground ml-1.5 font-mono text-xs">
+                                            {r.sub}
+                                        </span>
+                                    )}
                                 </span>
-                                <span className={`shrink-0 text-xs font-medium ${typeColor[r.type] ?? 'text-muted-foreground'}`}>{r.type}</span>
+                                <span
+                                    className={`shrink-0 text-xs font-medium ${typeColor[r.type] ?? 'text-muted-foreground'}`}
+                                >
+                                    {r.type}
+                                </span>
                             </button>
                         ))}
                 </div>

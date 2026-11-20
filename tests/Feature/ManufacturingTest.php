@@ -9,6 +9,7 @@ use App\Models\AccountingPeriod;
 use App\Models\Company;
 use App\Models\FiscalYear;
 use App\Models\Item;
+use App\Models\Journal;
 use App\Models\JournalLine;
 use App\Models\StockBalance;
 use App\Models\Uom;
@@ -86,7 +87,7 @@ class ManufacturingTest extends TestCase
         $this->assertEquals('20000.0000', $wo->material_cost);
         $this->assertEquals('800.0000', StockBalance::where('item_id', $this->steel->id)->first()->quantity);
 
-        $j = $wo->issue_journal_id ? \App\Models\Journal::find($wo->issue_journal_id) : null;
+        $j = $wo->issue_journal_id ? Journal::find($wo->issue_journal_id) : null;
         $this->assertEquals('20000.0000', $j->lines->firstWhere('account_id', $this->acc['wip']->id)->base_debit);
         $this->assertEquals('20000.0000', $j->lines->firstWhere('account_id', $this->acc['rm']->id)->base_credit);
     }

@@ -7,6 +7,7 @@ use App\Models\PurchaseBill;
 use App\Models\SalesInvoice;
 use App\Support\Tenancy\TenantManager;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 
 /**
  * Aged receivables / payables — open invoices and bills bucketed by how far past due
@@ -61,7 +62,7 @@ class AgingReports
     }
 
     /**
-     * @param  \Illuminate\Support\Collection<int, object>  $documents
+     * @param  Collection<int, object>  $documents
      */
     private function build(string $asOf, $documents, callable $extract): array
     {

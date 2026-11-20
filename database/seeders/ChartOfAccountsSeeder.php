@@ -8,6 +8,7 @@ use App\Ledger\PostingEngine;
 use App\Models\Account;
 use App\Models\Company;
 use App\Models\CostCenter;
+use App\Models\Journal;
 use App\Support\Tenancy\TenantManager;
 use Illuminate\Database\Seeder;
 
@@ -128,7 +129,7 @@ class ChartOfAccountsSeeder extends Seeder
 
         $tenant->withCompany($company, function () use ($ids) {
             // Idempotent: skip if an opening entry already exists.
-            if (\App\Models\Journal::where('type', 'opening')->exists()) {
+            if (Journal::where('type', 'opening')->exists()) {
                 return;
             }
 

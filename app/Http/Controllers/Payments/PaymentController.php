@@ -14,8 +14,10 @@ use App\Models\Supplier;
 use App\Payments\PaymentException;
 use App\Payments\PaymentService;
 use App\Support\Tenancy\TenantManager;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -72,7 +74,7 @@ class PaymentController extends Controller
             'id' => $d->id,
             'party_id' => $d->party_id,
             'number' => $d->number,
-            'date' => \Illuminate\Support\Carbon::parse($d->date)->toDateString(),
+            'date' => Carbon::parse($d->date)->toDateString(),
             'currency' => $d->currency ?: $base,
             'total' => (float) $d->total,
             'outstanding' => round((float) $d->total - (float) $d->amount_paid, 4),
@@ -124,7 +126,7 @@ class PaymentController extends Controller
         $currency = $validated['currency'] ?? $base;
         $fxRate = $currency === $base ? 1 : ($validated['fx_rate'] ?? 1);
 
-        $payment = \Illuminate\Support\Facades\DB::transaction(function () use ($validated, $direction, $tenant, $partyClass, $docClass, $currency, $fxRate) {
+        $payment = DB::transaction(function () use ($validated, $direction, $tenant, $partyClass, $docClass, $currency, $fxRate) {
             $party = $partyClass::findOrFail($validated['party_id']);
             $payment = Payment::create([
                 'company_id' => $tenant->id(),

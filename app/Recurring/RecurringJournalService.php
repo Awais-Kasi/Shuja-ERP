@@ -33,7 +33,7 @@ class RecurringJournalService
     ) {}
 
     /**
-     * @param  array<string, mixed>  $data   name, reference?, memo?, frequency, interval, start_date, end_date?
+     * @param  array<string, mixed>  $data  name, reference?, memo?, frequency, interval, start_date, end_date?
      * @param  array<int, array{account_id:int, debit?:float, credit?:float, cost_center_id?:?int, description?:?string}>  $lines
      */
     public function create(array $data, array $lines): RecurringJournal

@@ -8,6 +8,8 @@ use App\Ledger\PostingEngine;
 use App\Models\Account;
 use App\Models\AccountingPeriod;
 use App\Models\Company;
+use App\Models\ConsignmentDispatch;
+use App\Models\ConsignmentSettlement;
 use App\Models\Customer;
 use App\Models\FiscalYear;
 use App\Models\PurchaseBill;
@@ -104,8 +106,8 @@ class TaxReportTest extends TestCase
     public function test_consignment_settlements_are_included_in_output_tax(): void
     {
         $con = Warehouse::create(['company_id' => $this->company->id, 'code' => 'CON', 'name' => 'Consignment', 'type' => 'consignment']);
-        $dispatch = \App\Models\ConsignmentDispatch::create(['company_id' => $this->company->id, 'from_warehouse_id' => $this->wh->id, 'to_warehouse_id' => $con->id, 'agent_customer_id' => $this->customer->id, 'dispatch_date' => $this->to, 'status' => 'posted']);
-        \App\Models\ConsignmentSettlement::create(['company_id' => $this->company->id, 'consignment_dispatch_id' => $dispatch->id, 'consignment_warehouse_id' => $con->id, 'agent_customer_id' => $this->customer->id, 'number' => 'CST-1', 'settlement_date' => $this->to, 'subtotal' => 5000, 'tax_amount' => 850, 'total' => 5850, 'status' => 'posted']);
+        $dispatch = ConsignmentDispatch::create(['company_id' => $this->company->id, 'from_warehouse_id' => $this->wh->id, 'to_warehouse_id' => $con->id, 'agent_customer_id' => $this->customer->id, 'dispatch_date' => $this->to, 'status' => 'posted']);
+        ConsignmentSettlement::create(['company_id' => $this->company->id, 'consignment_dispatch_id' => $dispatch->id, 'consignment_warehouse_id' => $con->id, 'agent_customer_id' => $this->customer->id, 'number' => 'CST-1', 'settlement_date' => $this->to, 'subtotal' => 5000, 'tax_amount' => 850, 'total' => 5850, 'status' => 'posted']);
 
         $r = app(TaxReports::class)->salesTax($this->from, $this->to);
 

@@ -94,8 +94,12 @@ export default function ChartOfAccounts({
             <div className="flex h-full flex-1 flex-col gap-6 p-4 md:p-6">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
-                        <h1 className="text-2xl font-semibold tracking-tight">Chart of Accounts</h1>
-                        <p className="text-muted-foreground text-sm">{accounts.length} accounts</p>
+                        <h1 className="text-2xl font-semibold tracking-tight">
+                            Chart of Accounts
+                        </h1>
+                        <p className="text-muted-foreground text-sm">
+                            {accounts.length} accounts
+                        </p>
                     </div>
                     {can('accounting.account.manage') && (
                         <Dialog open={open} onOpenChange={setOpen}>
@@ -108,52 +112,129 @@ export default function ChartOfAccounts({
                                 <form onSubmit={submit}>
                                     <DialogHeader>
                                         <DialogTitle>New account</DialogTitle>
-                                        <DialogDescription>Add a ledger account to the chart.</DialogDescription>
+                                        <DialogDescription>
+                                            Add a ledger account to the chart.
+                                        </DialogDescription>
                                     </DialogHeader>
                                     <div className="grid gap-4 py-4">
                                         <div className="grid grid-cols-3 gap-3">
                                             <div className="col-span-1 grid gap-1.5">
-                                                <Label htmlFor="code">Code</Label>
-                                                <Input id="code" value={form.data.code} onChange={(e) => form.setData('code', e.target.value)} />
-                                                {form.errors.code && <p className="text-destructive text-xs">{form.errors.code}</p>}
+                                                <Label htmlFor="code">
+                                                    Code
+                                                </Label>
+                                                <Input
+                                                    id="code"
+                                                    value={form.data.code}
+                                                    onChange={(e) =>
+                                                        form.setData(
+                                                            'code',
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                />
+                                                {form.errors.code && (
+                                                    <p className="text-destructive text-xs">
+                                                        {form.errors.code}
+                                                    </p>
+                                                )}
                                             </div>
                                             <div className="col-span-2 grid gap-1.5">
-                                                <Label htmlFor="name">Name</Label>
-                                                <Input id="name" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
-                                                {form.errors.name && <p className="text-destructive text-xs">{form.errors.name}</p>}
+                                                <Label htmlFor="name">
+                                                    Name
+                                                </Label>
+                                                <Input
+                                                    id="name"
+                                                    value={form.data.name}
+                                                    onChange={(e) =>
+                                                        form.setData(
+                                                            'name',
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                />
+                                                {form.errors.name && (
+                                                    <p className="text-destructive text-xs">
+                                                        {form.errors.name}
+                                                    </p>
+                                                )}
                                             </div>
                                         </div>
                                         <div className="grid grid-cols-2 gap-3">
                                             <div className="grid gap-1.5">
                                                 <Label>Type</Label>
-                                                <Select value={form.data.type} onValueChange={(v) => form.setData('type', v)}>
-                                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                                <Select
+                                                    value={form.data.type}
+                                                    onValueChange={(v) =>
+                                                        form.setData('type', v)
+                                                    }
+                                                >
+                                                    <SelectTrigger>
+                                                        <SelectValue />
+                                                    </SelectTrigger>
                                                     <SelectContent>
                                                         {TYPES.map((t) => (
-                                                            <SelectItem key={t} value={t} className="capitalize">{t}</SelectItem>
+                                                            <SelectItem
+                                                                key={t}
+                                                                value={t}
+                                                                className="capitalize"
+                                                            >
+                                                                {t}
+                                                            </SelectItem>
                                                         ))}
                                                     </SelectContent>
                                                 </Select>
                                             </div>
                                             <div className="grid gap-1.5">
                                                 <Label>Parent (group)</Label>
-                                                <Select value={form.data.parent_id} onValueChange={(v) => form.setData('parent_id', v)}>
-                                                    <SelectTrigger><SelectValue placeholder="None" /></SelectTrigger>
+                                                <Select
+                                                    value={form.data.parent_id}
+                                                    onValueChange={(v) =>
+                                                        form.setData(
+                                                            'parent_id',
+                                                            v,
+                                                        )
+                                                    }
+                                                >
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="None" />
+                                                    </SelectTrigger>
                                                     <SelectContent>
                                                         {groups.map((g) => (
-                                                            <SelectItem key={g.id} value={String(g.id)}>{g.code} — {g.name}</SelectItem>
+                                                            <SelectItem
+                                                                key={g.id}
+                                                                value={String(
+                                                                    g.id,
+                                                                )}
+                                                            >
+                                                                {g.code} —{' '}
+                                                                {g.name}
+                                                            </SelectItem>
                                                         ))}
                                                     </SelectContent>
                                                 </Select>
                                             </div>
                                         </div>
                                         <label className="flex items-center gap-2 text-sm">
-                                            <Checkbox checked={form.data.is_group} onCheckedChange={(v) => form.setData('is_group', Boolean(v))} />
-                                            This is a group / header account (not postable)
+                                            <Checkbox
+                                                checked={form.data.is_group}
+                                                onCheckedChange={(v) =>
+                                                    form.setData(
+                                                        'is_group',
+                                                        Boolean(v),
+                                                    )
+                                                }
+                                            />
+                                            This is a group / header account
+                                            (not postable)
                                         </label>
                                     </div>
                                     <DialogFooter>
-                                        <Button type="submit" disabled={form.processing}>Create account</Button>
+                                        <Button
+                                            type="submit"
+                                            disabled={form.processing}
+                                        >
+                                            Create account
+                                        </Button>
                                     </DialogFooter>
                                 </form>
                             </DialogContent>
@@ -174,22 +255,58 @@ export default function ChartOfAccounts({
                         </thead>
                         <tbody className="divide-y">
                             {accounts.map((a) => (
-                                <tr key={a.id} className={a.is_group ? 'bg-muted/20 font-semibold' : ''}>
-                                    <td className="px-4 py-2 font-mono text-xs tabular-nums">{a.code}</td>
-                                    <td className="px-4 py-2">
-                                        <span style={{ paddingLeft: `${depthOf(a) * 16}px` }}>{a.name}</span>
+                                <tr
+                                    key={a.id}
+                                    className={
+                                        a.is_group
+                                            ? 'bg-muted/20 font-semibold'
+                                            : ''
+                                    }
+                                >
+                                    <td className="px-4 py-2 font-mono text-xs tabular-nums">
+                                        {a.code}
                                     </td>
-                                    <td className={`px-4 py-2 capitalize ${typeColor[a.type] ?? ''}`}>{a.type}</td>
                                     <td className="px-4 py-2">
-                                        {a.control_type ? <Badge variant="outline" className="font-mono text-[10px] uppercase">{a.control_type}</Badge> : <span className="text-muted-foreground">—</span>}
+                                        <span
+                                            style={{
+                                                paddingLeft: `${depthOf(a) * 16}px`,
+                                            }}
+                                        >
+                                            {a.name}
+                                        </span>
+                                    </td>
+                                    <td
+                                        className={`px-4 py-2 capitalize ${typeColor[a.type] ?? ''}`}
+                                    >
+                                        {a.type}
+                                    </td>
+                                    <td className="px-4 py-2">
+                                        {a.control_type ? (
+                                            <Badge
+                                                variant="outline"
+                                                className="font-mono text-[10px] uppercase"
+                                            >
+                                                {a.control_type}
+                                            </Badge>
+                                        ) : (
+                                            <span className="text-muted-foreground">
+                                                —
+                                            </span>
+                                        )}
                                     </td>
                                     <td className="px-4 py-2">
                                         {a.is_group ? (
-                                            <span className="text-muted-foreground text-xs">group</span>
+                                            <span className="text-muted-foreground text-xs">
+                                                group
+                                            </span>
                                         ) : a.is_active ? (
-                                            <span className="text-emerald-600 dark:text-emerald-400 text-xs">active</span>
+                                            <span className="text-xs text-emerald-600 dark:text-emerald-400">
+                                                active
+                                            </span>
                                         ) : (
-                                            <span className="text-muted-foreground text-xs">inactive</span>
+                                            <span className="text-muted-foreground text-xs">
+                                                inactive
+                                            </span>
                                         )}
                                     </td>
                                 </tr>

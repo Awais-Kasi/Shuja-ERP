@@ -11,6 +11,7 @@ use App\Models\Customer;
 use App\Models\FiscalYear;
 use App\Models\Item;
 use App\Models\Journal;
+use App\Models\JournalLine;
 use App\Models\StockBalance;
 use App\Models\Supplier;
 use App\Models\Uom;
@@ -18,6 +19,7 @@ use App\Models\Warehouse;
 use App\Support\Tenancy\TenantManager;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class ConsignmentTripTest extends TestCase
@@ -150,12 +152,12 @@ class ConsignmentTripTest extends TestCase
         $this->assertCount(2, $trip->sales);
 
         // Each buyer's receivable (khata) is stamped to them: 12000*477.5 and 8000*477.5 cost.
-        $ar = fn ($cid) => (float) \App\Models\JournalLine::query()
+        $ar = fn ($cid) => (float) JournalLine::query()
             ->join('accounts as a', 'a.id', '=', 'journal_lines.account_id')
             ->where('a.control_type', 'ar')
             ->where('journal_lines.party_type', (new Customer)->getMorphClass())
             ->where('journal_lines.party_id', $cid)
-            ->sum(\Illuminate\Support\Facades\DB::raw('journal_lines.base_debit - journal_lines.base_credit'));
+            ->sum(DB::raw('journal_lines.base_debit - journal_lines.base_credit'));
         $this->assertEqualsWithDelta(7_000_000, $ar($buyerA->id), 0.01);
         $this->assertEqualsWithDelta(5_000_000, $ar($buyerB->id), 0.01);
     }

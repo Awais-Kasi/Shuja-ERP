@@ -31,7 +31,11 @@ const statusStyle: Record<string, string> = {
     void: 'bg-muted text-muted-foreground',
 };
 
-export default function JournalsIndex({ journals }: { journals: Paginator<JournalRow> }) {
+export default function JournalsIndex({
+    journals,
+}: {
+    journals: Paginator<JournalRow>;
+}) {
     const { can } = usePermissions();
 
     return (
@@ -40,8 +44,12 @@ export default function JournalsIndex({ journals }: { journals: Paginator<Journa
             <div className="flex h-full flex-1 flex-col gap-6 p-4 md:p-6">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
-                        <h1 className="text-2xl font-semibold tracking-tight">Journal Entries</h1>
-                        <p className="text-muted-foreground text-sm">{journals.total} journals</p>
+                        <h1 className="text-2xl font-semibold tracking-tight">
+                            Journal Entries
+                        </h1>
+                        <p className="text-muted-foreground text-sm">
+                            {journals.total} journals
+                        </p>
                     </div>
                     {can('accounting.journal.create') && (
                         <Button asChild>
@@ -67,7 +75,10 @@ export default function JournalsIndex({ journals }: { journals: Paginator<Journa
                         <tbody className="divide-y">
                             {journals.data.length === 0 && (
                                 <tr>
-                                    <td colSpan={6} className="text-muted-foreground px-4 py-10 text-center">
+                                    <td
+                                        colSpan={6}
+                                        className="text-muted-foreground px-4 py-10 text-center"
+                                    >
                                         No journals yet.
                                     </td>
                                 </tr>
@@ -75,16 +86,37 @@ export default function JournalsIndex({ journals }: { journals: Paginator<Journa
                             {journals.data.map((j) => (
                                 <tr
                                     key={j.id}
-                                    onClick={() => router.visit(`/accounting/journals/${j.id}`)}
+                                    onClick={() =>
+                                        router.visit(
+                                            `/accounting/journals/${j.id}`,
+                                        )
+                                    }
                                     className="hover:bg-muted/40 cursor-pointer"
                                 >
-                                    <td className="px-4 py-2.5 font-mono text-xs">{j.number ?? '—'}</td>
-                                    <td className="px-4 py-2.5 tabular-nums">{j.entry_date}</td>
-                                    <td className="px-4 py-2.5 capitalize">{j.type}</td>
-                                    <td className="px-4 py-2.5">{j.memo ?? j.reference ?? <span className="text-muted-foreground">—</span>}</td>
-                                    <td className="px-4 py-2.5 text-right font-mono tabular-nums">{money(j.amount)}</td>
+                                    <td className="px-4 py-2.5 font-mono text-xs">
+                                        {j.number ?? '—'}
+                                    </td>
+                                    <td className="px-4 py-2.5 tabular-nums">
+                                        {j.entry_date}
+                                    </td>
+                                    <td className="px-4 py-2.5 capitalize">
+                                        {j.type}
+                                    </td>
                                     <td className="px-4 py-2.5">
-                                        <Badge variant="secondary" className={`capitalize ${statusStyle[j.status] ?? ''}`}>
+                                        {j.memo ?? j.reference ?? (
+                                            <span className="text-muted-foreground">
+                                                —
+                                            </span>
+                                        )}
+                                    </td>
+                                    <td className="px-4 py-2.5 text-right font-mono tabular-nums">
+                                        {money(j.amount)}
+                                    </td>
+                                    <td className="px-4 py-2.5">
+                                        <Badge
+                                            variant="secondary"
+                                            className={`capitalize ${statusStyle[j.status] ?? ''}`}
+                                        >
                                             {j.status}
                                         </Badge>
                                     </td>
@@ -102,7 +134,9 @@ export default function JournalsIndex({ journals }: { journals: Paginator<Journa
                                 size="sm"
                                 variant={link.active ? 'default' : 'outline'}
                                 disabled={!link.url}
-                                onClick={() => link.url && router.visit(link.url)}
+                                onClick={() =>
+                                    link.url && router.visit(link.url)
+                                }
                                 dangerouslySetInnerHTML={{ __html: link.label }}
                             />
                         ))}

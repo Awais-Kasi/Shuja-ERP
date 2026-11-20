@@ -4,7 +4,15 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { usePermissions } from '@/hooks/use-permissions';
 
-type Row = { id: number; number: string | null; date: string; to: string; agent: string | null; status: string; lines_count: number };
+type Row = {
+    id: number;
+    number: string | null;
+    date: string;
+    to: string;
+    agent: string | null;
+    status: string;
+    lines_count: number;
+};
 type Paginator<T> = { data: T[]; total: number };
 
 const statusStyle: Record<string, string> = {
@@ -14,7 +22,11 @@ const statusStyle: Record<string, string> = {
     draft: 'bg-muted text-muted-foreground',
 };
 
-export default function DispatchesIndex({ dispatches }: { dispatches: Paginator<Row> }) {
+export default function DispatchesIndex({
+    dispatches,
+}: {
+    dispatches: Paginator<Row>;
+}) {
     const { can } = usePermissions();
     return (
         <>
@@ -22,10 +34,20 @@ export default function DispatchesIndex({ dispatches }: { dispatches: Paginator<
             <div className="flex h-full flex-1 flex-col gap-6 p-4 md:p-6">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
-                        <h1 className="text-2xl font-semibold tracking-tight">Consignment Dispatches</h1>
-                        <p className="text-muted-foreground text-sm">{dispatches.total} dispatches</p>
+                        <h1 className="text-2xl font-semibold tracking-tight">
+                            Consignment Dispatches
+                        </h1>
+                        <p className="text-muted-foreground text-sm">
+                            {dispatches.total} dispatches
+                        </p>
                     </div>
-                    {can('consignment.manage') && <Button asChild><Link href="/consignment/dispatches/create"><Plus className="size-4" /> New dispatch</Link></Button>}
+                    {can('consignment.manage') && (
+                        <Button asChild>
+                            <Link href="/consignment/dispatches/create">
+                                <Plus className="size-4" /> New dispatch
+                            </Link>
+                        </Button>
+                    )}
                 </div>
                 <div className="overflow-x-auto rounded-xl border">
                     <table className="w-full text-sm">
@@ -39,14 +61,46 @@ export default function DispatchesIndex({ dispatches }: { dispatches: Paginator<
                             </tr>
                         </thead>
                         <tbody className="divide-y">
-                            {dispatches.data.length === 0 && <tr><td colSpan={5} className="text-muted-foreground px-4 py-10 text-center">No dispatches yet.</td></tr>}
+                            {dispatches.data.length === 0 && (
+                                <tr>
+                                    <td
+                                        colSpan={5}
+                                        className="text-muted-foreground px-4 py-10 text-center"
+                                    >
+                                        No dispatches yet.
+                                    </td>
+                                </tr>
+                            )}
                             {dispatches.data.map((d) => (
-                                <tr key={d.id} onClick={() => router.visit(`/consignment/dispatches/${d.id}`)} className="hover:bg-muted/40 cursor-pointer">
-                                    <td className="px-4 py-2.5 font-mono text-xs">{d.number ?? '—'}</td>
-                                    <td className="px-4 py-2.5 tabular-nums">{d.date}</td>
-                                    <td className="px-4 py-2.5 font-mono text-xs">{d.to}</td>
-                                    <td className="px-4 py-2.5">{d.agent ?? '—'}</td>
-                                    <td className="px-4 py-2.5"><Badge variant="secondary" className={`capitalize ${statusStyle[d.status] ?? ''}`}>{d.status.replace('_', ' ')}</Badge></td>
+                                <tr
+                                    key={d.id}
+                                    onClick={() =>
+                                        router.visit(
+                                            `/consignment/dispatches/${d.id}`,
+                                        )
+                                    }
+                                    className="hover:bg-muted/40 cursor-pointer"
+                                >
+                                    <td className="px-4 py-2.5 font-mono text-xs">
+                                        {d.number ?? '—'}
+                                    </td>
+                                    <td className="px-4 py-2.5 tabular-nums">
+                                        {d.date}
+                                    </td>
+                                    <td className="px-4 py-2.5 font-mono text-xs">
+                                        {d.to}
+                                    </td>
+                                    <td className="px-4 py-2.5">
+                                        {d.agent ?? '—'}
+                                    </td>
+                                    <td className="px-4 py-2.5">
+                                        <Badge
+                                            variant="secondary"
+                                            className={`capitalize ${statusStyle[d.status] ?? ''}`}
+                                        >
+                                            {d.status.replace('_', ' ')}
+                                        </Badge>
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>

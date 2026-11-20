@@ -9,6 +9,7 @@ use App\Models\Customer;
 use App\Models\Item;
 use App\Models\PurchaseBill;
 use App\Models\SalesInvoice;
+use App\Models\StockFifoLayer;
 use App\Models\Supplier;
 use App\Models\Uom;
 use App\Models\Warehouse;
@@ -124,7 +125,7 @@ class ReportsAgingTest extends TestCase
         // a consignment receipt/transfer). It must still appear, aged by last receipt.
         $fifo = $this->item('F', 'fifo');
         app(InventoryService::class)->receive($fifo, $this->wh, 10, 100, ['posting_date' => $this->ago(45), 'entry_type' => 'receipt']);
-        \App\Models\StockFifoLayer::where('item_id', $fifo->id)->delete(); // simulate missing layers
+        StockFifoLayer::where('item_id', $fifo->id)->delete(); // simulate missing layers
 
         $a = app(InventoryReports::class)->aging($this->asOf);
         $v = app(InventoryReports::class)->valuation();

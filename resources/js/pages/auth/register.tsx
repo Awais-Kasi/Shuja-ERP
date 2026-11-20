@@ -93,7 +93,10 @@ export default function Register({ passwordRules }: Props) {
                             <Button
                                 type="submit"
                                 className="auth-btn mt-2 w-full border-0 text-white transition-transform hover:-translate-y-0.5"
-                                style={{ backgroundImage: 'linear-gradient(90deg,#4f46e5,#7c3aed,#4f46e5)' }}
+                                style={{
+                                    backgroundImage:
+                                        'linear-gradient(90deg,#4f46e5,#7c3aed,#4f46e5)',
+                                }}
                                 tabIndex={5}
                                 data-test="register-user-button"
                             >

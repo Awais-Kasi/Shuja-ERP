@@ -11,7 +11,15 @@ import {
 import { money, moneyOrDash } from '@/lib/format';
 
 type Filters = { account_id: number | null; from: string; to: string };
-type Line = { journal_id: number; number: string; date: string; narration: string | null; debit: number; credit: number; balance: number };
+type Line = {
+    journal_id: number;
+    number: string;
+    date: string;
+    narration: string | null;
+    debit: number;
+    credit: number;
+    balance: number;
+};
 type Statement = {
     account: { id: number; code: string; name: string; type: string };
     opening: number;
@@ -29,7 +37,11 @@ export default function GeneralLedger({
     statement: Statement | null;
 }) {
     const reload = (patch: Partial<Filters>) => {
-        router.get('/accounting/general-ledger', { ...filters, ...patch }, { preserveState: true, preserveScroll: true, replace: true });
+        router.get(
+            '/accounting/general-ledger',
+            { ...filters, ...patch },
+            { preserveState: true, preserveScroll: true, replace: true },
+        );
     };
 
     return (
@@ -37,29 +49,60 @@ export default function GeneralLedger({
             <Head title="General Ledger" />
             <div className="flex h-full flex-1 flex-col gap-6 p-4 md:p-6">
                 <div>
-                    <h1 className="text-2xl font-semibold tracking-tight">General Ledger</h1>
-                    <p className="text-muted-foreground text-sm">Account statement with running balance</p>
+                    <h1 className="text-2xl font-semibold tracking-tight">
+                        General Ledger
+                    </h1>
+                    <p className="text-muted-foreground text-sm">
+                        Account statement with running balance
+                    </p>
                 </div>
 
                 <div className="grid gap-3 sm:grid-cols-3">
                     <div className="grid gap-1.5">
                         <Label className="text-xs">Account</Label>
-                        <Select value={filters.account_id ? String(filters.account_id) : ''} onValueChange={(v) => reload({ account_id: Number(v) })}>
-                            <SelectTrigger><SelectValue placeholder="Select account" /></SelectTrigger>
+                        <Select
+                            value={
+                                filters.account_id
+                                    ? String(filters.account_id)
+                                    : ''
+                            }
+                            onValueChange={(v) =>
+                                reload({ account_id: Number(v) })
+                            }
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select account" />
+                            </SelectTrigger>
                             <SelectContent>
                                 {accounts.map((a) => (
-                                    <SelectItem key={a.id} value={String(a.id)}>{a.label}</SelectItem>
+                                    <SelectItem key={a.id} value={String(a.id)}>
+                                        {a.label}
+                                    </SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
                     </div>
                     <div className="grid gap-1.5">
-                        <Label htmlFor="from" className="text-xs">From</Label>
-                        <Input id="from" type="date" value={filters.from} onChange={(e) => reload({ from: e.target.value })} />
+                        <Label htmlFor="from" className="text-xs">
+                            From
+                        </Label>
+                        <Input
+                            id="from"
+                            type="date"
+                            value={filters.from}
+                            onChange={(e) => reload({ from: e.target.value })}
+                        />
                     </div>
                     <div className="grid gap-1.5">
-                        <Label htmlFor="to" className="text-xs">To</Label>
-                        <Input id="to" type="date" value={filters.to} onChange={(e) => reload({ to: e.target.value })} />
+                        <Label htmlFor="to" className="text-xs">
+                            To
+                        </Label>
+                        <Input
+                            id="to"
+                            type="date"
+                            value={filters.to}
+                            onChange={(e) => reload({ to: e.target.value })}
+                        />
                     </div>
                 </div>
 
@@ -85,24 +128,52 @@ export default function GeneralLedger({
                             </thead>
                             <tbody className="divide-y">
                                 <tr className="text-muted-foreground bg-muted/20">
-                                    <td className="px-4 py-2" colSpan={5}>Opening balance</td>
-                                    <td className="px-4 py-2 text-right font-mono tabular-nums">{money(statement.opening)}</td>
+                                    <td className="px-4 py-2" colSpan={5}>
+                                        Opening balance
+                                    </td>
+                                    <td className="px-4 py-2 text-right font-mono tabular-nums">
+                                        {money(statement.opening)}
+                                    </td>
                                 </tr>
                                 {statement.lines.map((l, i) => (
-                                    <tr key={i} className="hover:bg-muted/40 cursor-pointer" onClick={() => router.visit(`/accounting/journals/${l.journal_id}`)}>
-                                        <td className="px-4 py-2 tabular-nums">{l.date}</td>
-                                        <td className="px-4 py-2 font-mono text-xs">{l.number}</td>
-                                        <td className="text-muted-foreground px-4 py-2">{l.narration ?? '—'}</td>
-                                        <td className="px-4 py-2 text-right font-mono tabular-nums">{moneyOrDash(l.debit)}</td>
-                                        <td className="px-4 py-2 text-right font-mono tabular-nums">{moneyOrDash(l.credit)}</td>
-                                        <td className="px-4 py-2 text-right font-mono tabular-nums">{money(l.balance)}</td>
+                                    <tr
+                                        key={i}
+                                        className="hover:bg-muted/40 cursor-pointer"
+                                        onClick={() =>
+                                            router.visit(
+                                                `/accounting/journals/${l.journal_id}`,
+                                            )
+                                        }
+                                    >
+                                        <td className="px-4 py-2 tabular-nums">
+                                            {l.date}
+                                        </td>
+                                        <td className="px-4 py-2 font-mono text-xs">
+                                            {l.number}
+                                        </td>
+                                        <td className="text-muted-foreground px-4 py-2">
+                                            {l.narration ?? '—'}
+                                        </td>
+                                        <td className="px-4 py-2 text-right font-mono tabular-nums">
+                                            {moneyOrDash(l.debit)}
+                                        </td>
+                                        <td className="px-4 py-2 text-right font-mono tabular-nums">
+                                            {moneyOrDash(l.credit)}
+                                        </td>
+                                        <td className="px-4 py-2 text-right font-mono tabular-nums">
+                                            {money(l.balance)}
+                                        </td>
                                     </tr>
                                 ))}
                             </tbody>
                             <tfoot className="border-t-2 font-semibold">
                                 <tr className="[&>td]:px-4 [&>td]:py-2.5">
-                                    <td colSpan={5} className="text-right">Closing balance</td>
-                                    <td className="text-right font-mono tabular-nums">{money(statement.closing)}</td>
+                                    <td colSpan={5} className="text-right">
+                                        Closing balance
+                                    </td>
+                                    <td className="text-right font-mono tabular-nums">
+                                        {money(statement.closing)}
+                                    </td>
                                 </tr>
                             </tfoot>
                         </table>

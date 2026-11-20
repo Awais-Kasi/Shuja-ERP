@@ -42,7 +42,10 @@ export function useAppMode() {
         window.dispatchEvent(new Event(EVENT));
     }, []);
 
-    const toggle = useCallback(() => setMode(read() === 'full' ? 'simple' : 'full'), [setMode]);
+    const toggle = useCallback(
+        () => setMode(read() === 'full' ? 'simple' : 'full'),
+        [setMode],
+    );
 
     return { mode, setMode, toggle };
 }

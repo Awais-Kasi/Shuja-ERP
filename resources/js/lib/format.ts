@@ -48,10 +48,15 @@ export function waPhone(phone: string | null | undefined): string {
 }
 
 /** Build a WhatsApp share link with a pre-filled (unsent) message. */
-export function whatsappUrl(phone: string | null | undefined, text: string): string {
+export function whatsappUrl(
+    phone: string | null | undefined,
+    text: string,
+): string {
     const p = waPhone(phone);
     const body = encodeURIComponent(text);
-    return p ? `https://wa.me/${p}?text=${body}` : `https://wa.me/?text=${body}`;
+    return p
+        ? `https://wa.me/${p}?text=${body}`
+        : `https://wa.me/?text=${body}`;
 }
 
 /** Format a money amount, rendering zero as an em dash for cleaner tables. */
@@ -63,9 +68,40 @@ export function moneyOrDash(value: number | string | null | undefined): string {
     return money(n);
 }
 
-const ONES = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten',
-    'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
-const TENS = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+const ONES = [
+    '',
+    'One',
+    'Two',
+    'Three',
+    'Four',
+    'Five',
+    'Six',
+    'Seven',
+    'Eight',
+    'Nine',
+    'Ten',
+    'Eleven',
+    'Twelve',
+    'Thirteen',
+    'Fourteen',
+    'Fifteen',
+    'Sixteen',
+    'Seventeen',
+    'Eighteen',
+    'Nineteen',
+];
+const TENS = [
+    '',
+    '',
+    'Twenty',
+    'Thirty',
+    'Forty',
+    'Fifty',
+    'Sixty',
+    'Seventy',
+    'Eighty',
+    'Ninety',
+];
 
 function threeDigitsToWords(n: number): string {
     let out = '';
@@ -87,7 +123,10 @@ function threeDigitsToWords(n: number): string {
  * Render a positive amount as words for a payslip, e.g. 162967.33 →
  * "Rupees One Hundred Sixty-Two Thousand Nine Hundred Sixty-Seven and 33/100 Only".
  */
-export function amountInWords(value: number | string | null | undefined, currency = 'Rupees'): string {
+export function amountInWords(
+    value: number | string | null | undefined,
+    currency = 'Rupees',
+): string {
     let n = typeof value === 'string' ? parseFloat(value) : (value ?? 0);
     if (!Number.isFinite(n) || n < 0) n = 0;
 
@@ -107,11 +146,13 @@ export function amountInWords(value: number | string | null | undefined, currenc
         }
         const parts: string[] = [];
         for (let i = groups.length - 1; i >= 0; i--) {
-            if (groups[i]) parts.push(threeDigitsToWords(groups[i]) + scales[i]);
+            if (groups[i])
+                parts.push(threeDigitsToWords(groups[i]) + scales[i]);
         }
         rupees = parts.join(' ');
     }
 
-    const paisaPart = paisa > 0 ? ` and ${String(paisa).padStart(2, '0')}/100` : '';
+    const paisaPart =
+        paisa > 0 ? ` and ${String(paisa).padStart(2, '0')}/100` : '';
     return `${currency} ${rupees}${paisaPart} Only`;
 }

@@ -4,6 +4,4 @@ namespace App\Purchasing;
 
 use RuntimeException;
 
-class PurchasingException extends RuntimeException
-{
-}
+class PurchasingException extends RuntimeException {}

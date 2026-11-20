@@ -4,8 +4,10 @@ namespace Tests\Feature;
 
 use App\Companies\CompanyProvisioner;
 use App\Models\Account;
+use App\Models\AccountingPeriod;
 use App\Models\AuditLog;
 use App\Models\Company;
+use App\Models\Currency;
 use App\Models\Customer;
 use App\Models\FiscalYear;
 use App\Models\NumberSequence;
@@ -47,7 +49,7 @@ class AdminTest extends TestCase
     {
         Permission::firstOrCreate(['name' => 'dashboard.view'], ['label' => 'x', 'group' => 'Platform']);
         Permission::firstOrCreate(['name' => 'accounting.journal.post'], ['label' => 'x', 'group' => 'Accounting']);
-        \App\Models\Currency::firstOrCreate(['code' => 'PKR'], ['name' => 'Rupee', 'is_active' => true]);
+        Currency::firstOrCreate(['code' => 'PKR'], ['name' => 'Rupee', 'is_active' => true]);
         $creator = User::factory()->create(['default_company_id' => null]);
 
         $company = app(CompanyProvisioner::class)->provision([
@@ -56,7 +58,7 @@ class AdminTest extends TestCase
 
         $this->assertGreaterThan(30, Account::withoutGlobalScopes()->where('company_id', $company->id)->count());
         $this->assertSame(1, FiscalYear::withoutGlobalScopes()->where('company_id', $company->id)->count());
-        $this->assertSame(12, \App\Models\AccountingPeriod::withoutGlobalScopes()->where('company_id', $company->id)->count());
+        $this->assertSame(12, AccountingPeriod::withoutGlobalScopes()->where('company_id', $company->id)->count());
         $this->assertGreaterThan(5, NumberSequence::withoutGlobalScopes()->where('company_id', $company->id)->count());
         $owner = Role::withoutGlobalScopes()->where('company_id', $company->id)->where('slug', 'owner')->first();
         $this->assertNotNull($owner);

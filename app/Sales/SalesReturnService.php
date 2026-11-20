@@ -11,6 +11,7 @@ use App\Models\NumberSequence;
 use App\Models\SalesInvoiceLine;
 use App\Models\SalesReturn;
 use App\Models\StockBalance;
+use App\Models\StockLedgerEntry;
 use App\Support\Tenancy\TenantManager;
 use Illuminate\Support\Facades\DB;
 
@@ -234,7 +235,7 @@ class SalesReturnService
                 entryDate: $date, lines: $lines, type: 'sales_return_reversal', reference: $return->number,
                 memo: "Reversal of sales return {$return->number}", source: $return,
             ));
-            \App\Models\StockLedgerEntry::whereIn('id', $sleIds)->update(['journal_id' => $journal->id]);
+            StockLedgerEntry::whereIn('id', $sleIds)->update(['journal_id' => $journal->id]);
 
             $return->update(['status' => 'reversed', 'reversal_journal_id' => $journal->id, 'reversed_at' => now()]);
 

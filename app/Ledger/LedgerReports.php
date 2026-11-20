@@ -4,6 +4,7 @@ namespace App\Ledger;
 
 use App\Models\Account;
 use App\Support\Tenancy\TenantManager;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class LedgerReports
@@ -71,7 +72,7 @@ class LedgerReports
      * Net movement (base debit − credit) per account for posted journals within a date
      * window. $from null means from inception.
      *
-     * @return \Illuminate\Support\Collection<int, object>
+     * @return Collection<int, object>
      */
     private function balances(?string $from, string $to)
     {

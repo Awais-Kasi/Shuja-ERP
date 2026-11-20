@@ -24,7 +24,13 @@ type Line = {
     description: string;
 };
 
-const emptyLine = (): Line => ({ account_id: '', debit: '', credit: '', cost_center_id: '', description: '' });
+const emptyLine = (): Line => ({
+    account_id: '',
+    debit: '',
+    credit: '',
+    cost_center_id: '',
+    description: '',
+});
 
 export default function CreateJournal({
     accounts,
@@ -64,8 +70,14 @@ export default function CreateJournal({
         setLines(next);
     };
 
-    const totalDebit = lines.reduce((s, l) => s + (parseFloat(l.debit) || 0), 0);
-    const totalCredit = lines.reduce((s, l) => s + (parseFloat(l.credit) || 0), 0);
+    const totalDebit = lines.reduce(
+        (s, l) => s + (parseFloat(l.debit) || 0),
+        0,
+    );
+    const totalCredit = lines.reduce(
+        (s, l) => s + (parseFloat(l.credit) || 0),
+        0,
+    );
     const diff = Math.round((totalDebit - totalCredit) * 10000) / 10000;
     const balanced = diff === 0 && totalDebit > 0;
 
@@ -79,9 +91,14 @@ export default function CreateJournal({
     return (
         <>
             <Head title="New Journal Entry" />
-            <form onSubmit={submit} className="flex h-full flex-1 flex-col gap-6 p-4 md:p-6">
+            <form
+                onSubmit={submit}
+                className="flex h-full flex-1 flex-col gap-6 p-4 md:p-6"
+            >
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                    <h1 className="text-2xl font-semibold tracking-tight">New Journal Entry</h1>
+                    <h1 className="text-2xl font-semibold tracking-tight">
+                        New Journal Entry
+                    </h1>
                     <div className="flex items-center gap-3">
                         <div
                             className={`rounded-md px-3 py-1.5 text-sm font-medium tabular-nums ${
@@ -90,9 +107,14 @@ export default function CreateJournal({
                                     : 'bg-amber-500/15 text-amber-600 dark:text-amber-400'
                             }`}
                         >
-                            {balanced ? 'Balanced' : `Out by ${money(Math.abs(diff))}`}
+                            {balanced
+                                ? 'Balanced'
+                                : `Out by ${money(Math.abs(diff))}`}
                         </div>
-                        <Button type="submit" disabled={!balanced || form.processing}>
+                        <Button
+                            type="submit"
+                            disabled={!balanced || form.processing}
+                        >
                             Post journal
                         </Button>
                     </div>
@@ -107,16 +129,41 @@ export default function CreateJournal({
                 <div className="grid gap-4 sm:grid-cols-3">
                     <div className="grid gap-1.5">
                         <Label htmlFor="entry_date">Date</Label>
-                        <Input id="entry_date" type="date" value={form.data.entry_date} onChange={(e) => form.setData('entry_date', e.target.value)} />
-                        {form.errors.entry_date && <p className="text-destructive text-xs">{form.errors.entry_date}</p>}
+                        <Input
+                            id="entry_date"
+                            type="date"
+                            value={form.data.entry_date}
+                            onChange={(e) =>
+                                form.setData('entry_date', e.target.value)
+                            }
+                        />
+                        {form.errors.entry_date && (
+                            <p className="text-destructive text-xs">
+                                {form.errors.entry_date}
+                            </p>
+                        )}
                     </div>
                     <div className="grid gap-1.5">
                         <Label htmlFor="reference">Reference</Label>
-                        <Input id="reference" value={form.data.reference} onChange={(e) => form.setData('reference', e.target.value)} placeholder="Optional" />
+                        <Input
+                            id="reference"
+                            value={form.data.reference}
+                            onChange={(e) =>
+                                form.setData('reference', e.target.value)
+                            }
+                            placeholder="Optional"
+                        />
                     </div>
                     <div className="grid gap-1.5">
                         <Label htmlFor="memo">Narration</Label>
-                        <Input id="memo" value={form.data.memo} onChange={(e) => form.setData('memo', e.target.value)} placeholder="What is this entry for?" />
+                        <Input
+                            id="memo"
+                            value={form.data.memo}
+                            onChange={(e) =>
+                                form.setData('memo', e.target.value)
+                            }
+                            placeholder="What is this entry for?"
+                        />
                     </div>
                 </div>
 
@@ -134,41 +181,119 @@ export default function CreateJournal({
                         </thead>
                         <tbody className="divide-y">
                             {lines.map((line, i) => (
-                                <tr key={i} className="[&>td]:px-3 [&>td]:py-1.5 align-top">
+                                <tr
+                                    key={i}
+                                    className="align-top [&>td]:px-3 [&>td]:py-1.5"
+                                >
                                     <td>
-                                        <Select value={line.account_id} onValueChange={(v) => updateLine(i, 'account_id', v)}>
-                                            <SelectTrigger className="w-full"><SelectValue placeholder="Select account" /></SelectTrigger>
+                                        <Select
+                                            value={line.account_id}
+                                            onValueChange={(v) =>
+                                                updateLine(i, 'account_id', v)
+                                            }
+                                        >
+                                            <SelectTrigger className="w-full">
+                                                <SelectValue placeholder="Select account" />
+                                            </SelectTrigger>
                                             <SelectContent>
                                                 {accounts.map((a) => (
-                                                    <SelectItem key={a.id} value={String(a.id)}>
-                                                        <span className="font-mono text-xs">{a.code}</span> {a.name}
+                                                    <SelectItem
+                                                        key={a.id}
+                                                        value={String(a.id)}
+                                                    >
+                                                        <span className="font-mono text-xs">
+                                                            {a.code}
+                                                        </span>{' '}
+                                                        {a.name}
                                                     </SelectItem>
                                                 ))}
                                             </SelectContent>
                                         </Select>
                                     </td>
                                     <td>
-                                        <Input value={line.description} onChange={(e) => updateLine(i, 'description', e.target.value)} placeholder="—" />
+                                        <Input
+                                            value={line.description}
+                                            onChange={(e) =>
+                                                updateLine(
+                                                    i,
+                                                    'description',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            placeholder="—"
+                                        />
                                     </td>
                                     <td>
-                                        <Select value={line.cost_center_id} onValueChange={(v) => updateLine(i, 'cost_center_id', v)}>
-                                            <SelectTrigger className="w-full"><SelectValue placeholder="—" /></SelectTrigger>
+                                        <Select
+                                            value={line.cost_center_id}
+                                            onValueChange={(v) =>
+                                                updateLine(
+                                                    i,
+                                                    'cost_center_id',
+                                                    v,
+                                                )
+                                            }
+                                        >
+                                            <SelectTrigger className="w-full">
+                                                <SelectValue placeholder="—" />
+                                            </SelectTrigger>
                                             <SelectContent>
                                                 {costCenters.map((c) => (
-                                                    <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>
+                                                    <SelectItem
+                                                        key={c.id}
+                                                        value={String(c.id)}
+                                                    >
+                                                        {c.name}
+                                                    </SelectItem>
                                                 ))}
                                             </SelectContent>
                                         </Select>
                                     </td>
                                     <td>
-                                        <Input inputMode="decimal" className="text-right font-mono tabular-nums" value={line.debit} onChange={(e) => updateLine(i, 'debit', e.target.value)} placeholder="0.00" />
+                                        <Input
+                                            inputMode="decimal"
+                                            className="text-right font-mono tabular-nums"
+                                            value={line.debit}
+                                            onChange={(e) =>
+                                                updateLine(
+                                                    i,
+                                                    'debit',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            placeholder="0.00"
+                                        />
                                     </td>
                                     <td>
-                                        <Input inputMode="decimal" className="text-right font-mono tabular-nums" value={line.credit} onChange={(e) => updateLine(i, 'credit', e.target.value)} placeholder="0.00" />
+                                        <Input
+                                            inputMode="decimal"
+                                            className="text-right font-mono tabular-nums"
+                                            value={line.credit}
+                                            onChange={(e) =>
+                                                updateLine(
+                                                    i,
+                                                    'credit',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            placeholder="0.00"
+                                        />
                                     </td>
                                     <td className="text-center">
                                         {lines.length > 2 && (
-                                            <Button type="button" variant="ghost" size="icon" onClick={() => setLines(lines.filter((_, idx) => idx !== i))}>
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={() =>
+                                                    setLines(
+                                                        lines.filter(
+                                                            (_, idx) =>
+                                                                idx !== i,
+                                                        ),
+                                                    )
+                                                }
+                                            >
                                                 <Trash2 className="text-muted-foreground size-4" />
                                             </Button>
                                         )}
@@ -177,20 +302,34 @@ export default function CreateJournal({
                             ))}
                         </tbody>
                         <tfoot className="border-t-2">
-                            <tr className="[&>td]:px-3 [&>td]:py-2.5 font-medium">
+                            <tr className="font-medium [&>td]:px-3 [&>td]:py-2.5">
                                 <td colSpan={3}>
-                                    <Button type="button" variant="outline" size="sm" onClick={() => setLines([...lines, emptyLine()])}>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() =>
+                                            setLines([...lines, emptyLine()])
+                                        }
+                                    >
                                         <Plus className="size-4" /> Add line
                                     </Button>
                                 </td>
-                                <td className="text-right font-mono tabular-nums">{money(totalDebit)}</td>
-                                <td className="text-right font-mono tabular-nums">{money(totalCredit)}</td>
+                                <td className="text-right font-mono tabular-nums">
+                                    {money(totalDebit)}
+                                </td>
+                                <td className="text-right font-mono tabular-nums">
+                                    {money(totalCredit)}
+                                </td>
                                 <td></td>
                             </tr>
                         </tfoot>
                     </table>
                 </div>
-                <p className="text-muted-foreground text-xs">Amounts in {baseCurrency}. Each line takes either a debit or a credit; the entry must balance before it can post.</p>
+                <p className="text-muted-foreground text-xs">
+                    Amounts in {baseCurrency}. Each line takes either a debit or
+                    a credit; the entry must balance before it can post.
+                </p>
             </form>
         </>
     );

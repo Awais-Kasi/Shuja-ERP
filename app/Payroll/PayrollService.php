@@ -14,6 +14,7 @@ use App\Models\Payslip;
 use App\Support\Tenancy\TenantManager;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -89,7 +90,7 @@ class PayrollService
     }
 
     /**
-     * @param  \Illuminate\Support\Collection<int, Employee>  $employees
+     * @param  Collection<int, Employee>  $employees
      */
     private function createRun(int $year, int $month, string $accrual, $employees, ?string $memo): PayrollRun
     {

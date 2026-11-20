@@ -6,15 +6,37 @@ import { usePermissions } from '@/hooks/use-permissions';
 import { money } from '@/lib/format';
 
 type Template = {
-    id: number; name: string; frequency: string; interval: number; next_run_date: string;
-    end_date: string | null; status: string; amount: number; generated: number;
+    id: number;
+    name: string;
+    frequency: string;
+    interval: number;
+    next_run_date: string;
+    end_date: string | null;
+    status: string;
+    amount: number;
+    generated: number;
 };
 
-const gradient = (from: string, to: string) => ({ backgroundImage: `linear-gradient(135deg, ${from} 0%, ${to} 100%)` });
+const gradient = (from: string, to: string) => ({
+    backgroundImage: `linear-gradient(135deg, ${from} 0%, ${to} 100%)`,
+});
 
 export function scheduleLabel(freq: string, interval: number): string {
-    const unit = { weekly: 'week', monthly: 'month', quarterly: 'quarter', yearly: 'year' }[freq] ?? freq;
-    return interval > 1 ? `Every ${interval} ${unit}s` : { weekly: 'Weekly', monthly: 'Monthly', quarterly: 'Quarterly', yearly: 'Yearly' }[freq] ?? freq;
+    const unit =
+        {
+            weekly: 'week',
+            monthly: 'month',
+            quarterly: 'quarter',
+            yearly: 'year',
+        }[freq] ?? freq;
+    return interval > 1
+        ? `Every ${interval} ${unit}s`
+        : ({
+              weekly: 'Weekly',
+              monthly: 'Monthly',
+              quarterly: 'Quarterly',
+              yearly: 'Yearly',
+          }[freq] ?? freq);
 }
 
 const statusStyle: Record<string, string> = {
@@ -23,30 +45,62 @@ const statusStyle: Record<string, string> = {
     ended: 'bg-slate-500/15 text-slate-600 dark:text-slate-400',
 };
 
-export default function RecurringIndex({ templates, dueCount }: { templates: Template[]; dueCount: number }) {
+export default function RecurringIndex({
+    templates,
+    dueCount,
+}: {
+    templates: Template[];
+    dueCount: number;
+}) {
     const { can } = usePermissions();
     const errors = (usePage().props.errors ?? {}) as Record<string, string>;
 
-    const runDue = () => router.post('/accounting/recurring/run', {}, { preserveScroll: true });
+    const runDue = () =>
+        router.post('/accounting/recurring/run', {}, { preserveScroll: true });
 
     return (
         <>
             <Head title="Recurring Journals" />
             <div className="flex h-full flex-1 flex-col gap-6 p-4 md:p-6">
-                <div className="relative overflow-hidden rounded-2xl p-6 text-white shadow-lg" style={gradient('#4338ca', '#6366f1')}>
-                    <Repeat className="pointer-events-none absolute -bottom-6 -right-4 size-40 opacity-15" />
+                <div
+                    className="relative overflow-hidden rounded-2xl p-6 text-white shadow-lg"
+                    style={gradient('#4338ca', '#6366f1')}
+                >
+                    <Repeat className="pointer-events-none absolute -right-4 -bottom-6 size-40 opacity-15" />
                     <div className="relative flex flex-wrap items-center justify-between gap-4">
                         <div>
-                            <div className="text-xs font-medium uppercase tracking-widest text-indigo-200">Accounting</div>
-                            <h1 className="mt-1 text-3xl font-bold tracking-tight">Recurring Journals</h1>
-                            <p className="mt-1 text-sm text-indigo-100/80">Schedule repeating entries — rent, depreciation accruals, amortisation — and post them on time.</p>
+                            <div className="text-xs font-medium tracking-widest text-indigo-200 uppercase">
+                                Accounting
+                            </div>
+                            <h1 className="mt-1 text-3xl font-bold tracking-tight">
+                                Recurring Journals
+                            </h1>
+                            <p className="mt-1 text-sm text-indigo-100/80">
+                                Schedule repeating entries — rent, depreciation
+                                accruals, amortisation — and post them on time.
+                            </p>
                         </div>
                         {can('accounting.recurring.manage') && (
                             <div className="flex items-center gap-2">
-                                <Button variant="secondary" className="bg-white/15 text-white hover:bg-white/25 disabled:opacity-50" disabled={dueCount === 0} onClick={runDue}>
-                                    <Play className="size-4" /> Run due{dueCount > 0 ? ` (${dueCount})` : ''}
+                                <Button
+                                    variant="secondary"
+                                    className="bg-white/15 text-white hover:bg-white/25 disabled:opacity-50"
+                                    disabled={dueCount === 0}
+                                    onClick={runDue}
+                                >
+                                    <Play className="size-4" /> Run due
+                                    {dueCount > 0 ? ` (${dueCount})` : ''}
                                 </Button>
-                                <Button className="bg-white text-indigo-700 hover:bg-white/90" onClick={() => router.visit('/accounting/recurring/create')}><Plus className="size-4" /> New template</Button>
+                                <Button
+                                    className="bg-white text-indigo-700 hover:bg-white/90"
+                                    onClick={() =>
+                                        router.visit(
+                                            '/accounting/recurring/create',
+                                        )
+                                    }
+                                >
+                                    <Plus className="size-4" /> New template
+                                </Button>
                             </div>
                         )}
                     </div>
@@ -71,15 +125,49 @@ export default function RecurringIndex({ templates, dueCount }: { templates: Tem
                             </tr>
                         </thead>
                         <tbody className="divide-y">
-                            {templates.length === 0 && <tr><td colSpan={6} className="text-muted-foreground px-4 py-10 text-center">No recurring journals yet.</td></tr>}
+                            {templates.length === 0 && (
+                                <tr>
+                                    <td
+                                        colSpan={6}
+                                        className="text-muted-foreground px-4 py-10 text-center"
+                                    >
+                                        No recurring journals yet.
+                                    </td>
+                                </tr>
+                            )}
                             {templates.map((t) => (
-                                <tr key={t.id} onClick={() => router.visit(`/accounting/recurring/${t.id}`)} className="hover:bg-muted/40 cursor-pointer [&>td]:px-4 [&>td]:py-2.5">
+                                <tr
+                                    key={t.id}
+                                    onClick={() =>
+                                        router.visit(
+                                            `/accounting/recurring/${t.id}`,
+                                        )
+                                    }
+                                    className="hover:bg-muted/40 cursor-pointer [&>td]:px-4 [&>td]:py-2.5"
+                                >
                                     <td className="font-medium">{t.name}</td>
-                                    <td>{scheduleLabel(t.frequency, t.interval)}</td>
-                                    <td className="font-mono text-xs">{t.status === 'ended' ? '—' : t.next_run_date}</td>
-                                    <td className="text-right font-mono tabular-nums">{money(t.amount)}</td>
-                                    <td className="text-center tabular-nums">{t.generated}</td>
-                                    <td><Badge variant="secondary" className={`capitalize ${statusStyle[t.status] ?? ''}`}>{t.status}</Badge></td>
+                                    <td>
+                                        {scheduleLabel(t.frequency, t.interval)}
+                                    </td>
+                                    <td className="font-mono text-xs">
+                                        {t.status === 'ended'
+                                            ? '—'
+                                            : t.next_run_date}
+                                    </td>
+                                    <td className="text-right font-mono tabular-nums">
+                                        {money(t.amount)}
+                                    </td>
+                                    <td className="text-center tabular-nums">
+                                        {t.generated}
+                                    </td>
+                                    <td>
+                                        <Badge
+                                            variant="secondary"
+                                            className={`capitalize ${statusStyle[t.status] ?? ''}`}
+                                        >
+                                            {t.status}
+                                        </Badge>
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>

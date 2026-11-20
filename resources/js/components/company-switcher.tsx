@@ -56,7 +56,8 @@ export function CompanySwitcher() {
                                     {current.name}
                                 </span>
                                 <span className="text-muted-foreground truncate text-xs">
-                                    {current.code ?? 'Company'} · {current.base_currency}
+                                    {current.code ?? 'Company'} ·{' '}
+                                    {current.base_currency}
                                 </span>
                             </div>
                             <ChevronsUpDown className="ml-auto size-4" />
@@ -65,7 +66,13 @@ export function CompanySwitcher() {
                     <DropdownMenuContent
                         className="w-(--radix-dropdown-menu-trigger-width) min-w-60 rounded-lg"
                         align="start"
-                        side={isMobile ? 'bottom' : state === 'collapsed' ? 'right' : 'bottom'}
+                        side={
+                            isMobile
+                                ? 'bottom'
+                                : state === 'collapsed'
+                                  ? 'right'
+                                  : 'bottom'
+                        }
                     >
                         <DropdownMenuLabel className="text-muted-foreground text-xs">
                             Companies
@@ -79,7 +86,9 @@ export function CompanySwitcher() {
                                 <div className="bg-muted flex size-6 items-center justify-center rounded-sm">
                                     <Building2 className="size-3.5 shrink-0" />
                                 </div>
-                                <span className="flex-1 truncate">{company.name}</span>
+                                <span className="flex-1 truncate">
+                                    {company.name}
+                                </span>
                                 {company.id === current.id && (
                                     <Check className="size-4" />
                                 )}

@@ -16,6 +16,7 @@ use App\Models\Warehouse;
 use App\Support\Tenancy\TenantManager;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -201,7 +202,7 @@ class ConsignmentTripController extends Controller
     }
 
     /** Postable (non-group, active) accounts the UI offers for credit/sale selects. */
-    private function postableAccounts(): \Illuminate\Support\Collection
+    private function postableAccounts(): Collection
     {
         return Account::where('is_group', false)->where('is_active', true)
             ->orderBy('code')->get(['id', 'code', 'name', 'control_type', 'type']);

@@ -45,6 +45,7 @@ class TenantManager
      * context afterwards. Useful for jobs, seeders and cross-company reports.
      *
      * @template T
+     *
      * @param  Closure():T  $callback
      * @return T
      */

@@ -41,7 +41,10 @@ export default function ForgotPassword({ status }: { status?: string }) {
                             <div className="my-6 flex items-center justify-start">
                                 <Button
                                     className="auth-btn w-full border-0 text-white transition-transform hover:-translate-y-0.5"
-                                    style={{ backgroundImage: 'linear-gradient(90deg,#4f46e5,#7c3aed,#4f46e5)' }}
+                                    style={{
+                                        backgroundImage:
+                                            'linear-gradient(90deg,#4f46e5,#7c3aed,#4f46e5)',
+                                    }}
                                     disabled={processing}
                                     data-test="email-password-reset-link-button"
                                 >

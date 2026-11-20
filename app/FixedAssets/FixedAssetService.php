@@ -11,6 +11,7 @@ use App\Models\FixedAsset;
 use App\Support\Tenancy\TenantManager;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -98,7 +99,7 @@ class FixedAssetService
     }
 
     /**
-     * @param  \Illuminate\Support\Collection<int, FixedAsset>  $assets
+     * @param  Collection<int, FixedAsset>  $assets
      */
     private function postDepreciation($assets, int $year, int $month, string $date): DepreciationRun
     {

@@ -11,7 +11,8 @@ export function usePermissions() {
         auth.isSuperAdmin || auth.permissions.includes(ability);
 
     const canAny = (abilities: string[]): boolean =>
-        auth.isSuperAdmin || abilities.some((a) => auth.permissions.includes(a));
+        auth.isSuperAdmin ||
+        abilities.some((a) => auth.permissions.includes(a));
 
     return {
         permissions: auth.permissions,

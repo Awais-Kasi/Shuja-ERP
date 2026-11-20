@@ -32,7 +32,9 @@ type Journal = {
 function Meta({ label, value }: { label: string; value: ReactNode }) {
     return (
         <div>
-            <dt className="text-muted-foreground text-xs uppercase tracking-wide">{label}</dt>
+            <dt className="text-muted-foreground text-xs tracking-wide uppercase">
+                {label}
+            </dt>
             <dd className="mt-0.5 text-sm">{value ?? '—'}</dd>
         </div>
     );
@@ -44,7 +46,11 @@ export default function ShowJournal({ journal }: { journal: Journal }) {
     const totalCredit = journal.lines.reduce((s, l) => s + l.credit, 0);
 
     const reverse = () => {
-        if (confirm(`Reverse journal ${journal.number}? This posts a mirror entry.`)) {
+        if (
+            confirm(
+                `Reverse journal ${journal.number}? This posts a mirror entry.`,
+            )
+        ) {
             router.post(`/accounting/journals/${journal.id}/reverse`);
         }
     };
@@ -56,21 +62,32 @@ export default function ShowJournal({ journal }: { journal: Journal }) {
                 <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
                         <Button asChild variant="ghost" size="icon">
-                            <Link href="/accounting/journals"><ArrowLeft className="size-4" /></Link>
+                            <Link href="/accounting/journals">
+                                <ArrowLeft className="size-4" />
+                            </Link>
                         </Button>
                         <div>
                             <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
                                 {journal.number}
-                                <Badge variant="secondary" className="capitalize">{journal.status}</Badge>
+                                <Badge
+                                    variant="secondary"
+                                    className="capitalize"
+                                >
+                                    {journal.status}
+                                </Badge>
                             </h1>
-                            <p className="text-muted-foreground text-sm capitalize">{journal.type} entry</p>
+                            <p className="text-muted-foreground text-sm capitalize">
+                                {journal.type} entry
+                            </p>
                         </div>
                     </div>
-                    {journal.status === 'posted' && journal.type !== 'reversal' && can('accounting.journal.post') && (
-                        <Button variant="outline" onClick={reverse}>
-                            <Undo2 className="size-4" /> Reverse
-                        </Button>
-                    )}
+                    {journal.status === 'posted' &&
+                        journal.type !== 'reversal' &&
+                        can('accounting.journal.post') && (
+                            <Button variant="outline" onClick={reverse}>
+                                <Undo2 className="size-4" /> Reverse
+                            </Button>
+                        )}
                 </div>
 
                 <dl className="grid grid-cols-2 gap-4 rounded-xl border p-4 sm:grid-cols-4">
@@ -78,8 +95,14 @@ export default function ShowJournal({ journal }: { journal: Journal }) {
                     <Meta label="Reference" value={journal.reference} />
                     <Meta label="Posted" value={journal.posted_at} />
                     <Meta label="Created by" value={journal.created_by} />
-                    {journal.memo && <div className="col-span-2 sm:col-span-4"><Meta label="Narration" value={journal.memo} /></div>}
-                    {journal.reverses && <Meta label="Reverses" value={journal.reverses} />}
+                    {journal.memo && (
+                        <div className="col-span-2 sm:col-span-4">
+                            <Meta label="Narration" value={journal.memo} />
+                        </div>
+                    )}
+                    {journal.reverses && (
+                        <Meta label="Reverses" value={journal.reverses} />
+                    )}
                 </dl>
 
                 <div className="overflow-x-auto rounded-xl border">
@@ -97,18 +120,32 @@ export default function ShowJournal({ journal }: { journal: Journal }) {
                             {journal.lines.map((l) => (
                                 <tr key={l.id}>
                                     <td className="px-4 py-2.5">{l.account}</td>
-                                    <td className="text-muted-foreground px-4 py-2.5">{l.description ?? '—'}</td>
-                                    <td className="px-4 py-2.5">{l.cost_center ?? '—'}</td>
-                                    <td className="px-4 py-2.5 text-right font-mono tabular-nums">{moneyOrDash(l.debit)}</td>
-                                    <td className="px-4 py-2.5 text-right font-mono tabular-nums">{moneyOrDash(l.credit)}</td>
+                                    <td className="text-muted-foreground px-4 py-2.5">
+                                        {l.description ?? '—'}
+                                    </td>
+                                    <td className="px-4 py-2.5">
+                                        {l.cost_center ?? '—'}
+                                    </td>
+                                    <td className="px-4 py-2.5 text-right font-mono tabular-nums">
+                                        {moneyOrDash(l.debit)}
+                                    </td>
+                                    <td className="px-4 py-2.5 text-right font-mono tabular-nums">
+                                        {moneyOrDash(l.credit)}
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>
                         <tfoot className="border-t-2 font-semibold">
                             <tr className="[&>td]:px-4 [&>td]:py-2.5">
-                                <td colSpan={3} className="text-right">Total</td>
-                                <td className="text-right font-mono tabular-nums">{moneyOrDash(totalDebit)}</td>
-                                <td className="text-right font-mono tabular-nums">{moneyOrDash(totalCredit)}</td>
+                                <td colSpan={3} className="text-right">
+                                    Total
+                                </td>
+                                <td className="text-right font-mono tabular-nums">
+                                    {moneyOrDash(totalDebit)}
+                                </td>
+                                <td className="text-right font-mono tabular-nums">
+                                    {moneyOrDash(totalCredit)}
+                                </td>
                             </tr>
                         </tfoot>
                     </table>

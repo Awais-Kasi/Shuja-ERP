@@ -77,7 +77,10 @@ export default function ResetPassword({ token, email, passwordRules }: Props) {
                         <Button
                             type="submit"
                             className="auth-btn mt-4 w-full border-0 text-white transition-transform hover:-translate-y-0.5"
-                            style={{ backgroundImage: 'linear-gradient(90deg,#4f46e5,#7c3aed,#4f46e5)' }}
+                            style={{
+                                backgroundImage:
+                                    'linear-gradient(90deg,#4f46e5,#7c3aed,#4f46e5)',
+                            }}
                             disabled={processing}
                             data-test="reset-password-button"
                         >

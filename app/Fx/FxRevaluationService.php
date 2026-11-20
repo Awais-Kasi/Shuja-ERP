@@ -11,6 +11,7 @@ use App\Models\FxRevaluation;
 use App\Models\FxRevaluationLine;
 use App\Support\Tenancy\TenantManager;
 use Illuminate\Database\UniqueConstraintViolationException;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -103,7 +104,7 @@ class FxRevaluationService
     public function run(string $date): FxRevaluation
     {
         // Normalise so a non-padded date can't sort wrong against stored dates.
-        $date = \Illuminate\Support\Carbon::parse($date)->toDateString();
+        $date = Carbon::parse($date)->toDateString();
 
         $latest = FxRevaluation::orderByDesc('revaluation_date')->orderByDesc('id')->first();
         if ($latest && $date <= $latest->revaluation_date->toDateString()) {

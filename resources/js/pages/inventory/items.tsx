@@ -41,13 +41,18 @@ type ItemRow = {
 type Option = { id: number; label?: string; code?: string; name?: string };
 type AccountOption = { id: number; code: string; label: string; type: string };
 
-const TYPES = ['stock', 'raw_material', 'finished_good', 'consumable', 'service'];
+const TYPES = [
+    'stock',
+    'raw_material',
+    'finished_good',
+    'consumable',
+    'service',
+];
 
 export default function Items({
     items,
     uoms,
     accounts,
-    defaultValuation,
 }: {
     items: ItemRow[];
     uoms: Option[];
@@ -69,7 +74,10 @@ export default function Items({
         return a ? String(a.id) : '';
     };
     const accountDefaults = (type: string) => ({
-        inventory_account_id: type === 'service' ? '' : idByCode(type === 'raw_material' ? '1121' : '1123'),
+        inventory_account_id:
+            type === 'service'
+                ? ''
+                : idByCode(type === 'raw_material' ? '1121' : '1123'),
         income_account_id: type === 'raw_material' ? '' : idByCode('4100'),
         cogs_account_id: type === 'raw_material' ? '' : idByCode('5100'),
     });
@@ -86,7 +94,8 @@ export default function Items({
     });
     // Sales accounts only matter for items you sell (finished goods, stock, etc.).
     const sellable = form.data.type !== 'raw_material';
-    const onType = (v: string) => form.setData((d) => ({ ...d, type: v, ...accountDefaults(v) }));
+    const onType = (v: string) =>
+        form.setData((d) => ({ ...d, type: v, ...accountDefaults(v) }));
 
     const submit = (e: FormEvent) => {
         e.preventDefault();
@@ -105,49 +114,123 @@ export default function Items({
             <div className="flex h-full flex-1 flex-col gap-6 p-4 md:p-6">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
-                        <h1 className="text-2xl font-semibold tracking-tight">Items</h1>
-                        <p className="text-muted-foreground text-sm">{items.length} items</p>
+                        <h1 className="text-2xl font-semibold tracking-tight">
+                            Items
+                        </h1>
+                        <p className="text-muted-foreground text-sm">
+                            {items.length} items
+                        </p>
                     </div>
                     {can('inventory.item.manage') && (
                         <Dialog open={open} onOpenChange={setOpen}>
                             <DialogTrigger asChild>
-                                <Button><Plus className="size-4" /> New item</Button>
+                                <Button>
+                                    <Plus className="size-4" /> New item
+                                </Button>
                             </DialogTrigger>
                             <DialogContent>
                                 <form onSubmit={submit}>
                                     <DialogHeader>
                                         <DialogTitle>New item</DialogTitle>
-                                        <DialogDescription>Add a stock or service item.</DialogDescription>
+                                        <DialogDescription>
+                                            Add a stock or service item.
+                                        </DialogDescription>
                                     </DialogHeader>
                                     <div className="grid gap-4 py-4">
                                         <div className="grid grid-cols-3 gap-3">
                                             <div className="grid min-w-0 gap-1.5">
-                                                <Label htmlFor="code">Code</Label>
-                                                <Input id="code" value={form.data.code} onChange={(e) => form.setData('code', e.target.value)} />
-                                                {form.errors.code && <p className="text-destructive text-xs">{form.errors.code}</p>}
+                                                <Label htmlFor="code">
+                                                    Code
+                                                </Label>
+                                                <Input
+                                                    id="code"
+                                                    value={form.data.code}
+                                                    onChange={(e) =>
+                                                        form.setData(
+                                                            'code',
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                />
+                                                {form.errors.code && (
+                                                    <p className="text-destructive text-xs">
+                                                        {form.errors.code}
+                                                    </p>
+                                                )}
                                             </div>
                                             <div className="col-span-2 grid gap-1.5">
-                                                <Label htmlFor="name">Name</Label>
-                                                <Input id="name" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
-                                                {form.errors.name && <p className="text-destructive text-xs">{form.errors.name}</p>}
+                                                <Label htmlFor="name">
+                                                    Name
+                                                </Label>
+                                                <Input
+                                                    id="name"
+                                                    value={form.data.name}
+                                                    onChange={(e) =>
+                                                        form.setData(
+                                                            'name',
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                />
+                                                {form.errors.name && (
+                                                    <p className="text-destructive text-xs">
+                                                        {form.errors.name}
+                                                    </p>
+                                                )}
                                             </div>
                                         </div>
                                         <div className="grid grid-cols-2 gap-3">
                                             <div className="grid min-w-0 gap-1.5">
                                                 <Label>Type</Label>
-                                                <Select value={form.data.type} onValueChange={onType}>
-                                                    <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+                                                <Select
+                                                    value={form.data.type}
+                                                    onValueChange={onType}
+                                                >
+                                                    <SelectTrigger className="w-full">
+                                                        <SelectValue />
+                                                    </SelectTrigger>
                                                     <SelectContent>
-                                                        {TYPES.map((t) => <SelectItem key={t} value={t} className="capitalize">{t.replace('_', ' ')}</SelectItem>)}
+                                                        {TYPES.map((t) => (
+                                                            <SelectItem
+                                                                key={t}
+                                                                value={t}
+                                                                className="capitalize"
+                                                            >
+                                                                {t.replace(
+                                                                    '_',
+                                                                    ' ',
+                                                                )}
+                                                            </SelectItem>
+                                                        ))}
                                                     </SelectContent>
                                                 </Select>
                                             </div>
                                             <div className="grid min-w-0 gap-1.5">
                                                 <Label>Unit</Label>
-                                                <Select value={form.data.uom_id} onValueChange={(v) => form.setData('uom_id', v)}>
-                                                    <SelectTrigger className="w-full"><SelectValue placeholder="e.g. KG" /></SelectTrigger>
+                                                <Select
+                                                    value={form.data.uom_id}
+                                                    onValueChange={(v) =>
+                                                        form.setData(
+                                                            'uom_id',
+                                                            v,
+                                                        )
+                                                    }
+                                                >
+                                                    <SelectTrigger className="w-full">
+                                                        <SelectValue placeholder="e.g. KG" />
+                                                    </SelectTrigger>
                                                     <SelectContent>
-                                                        {uoms.map((u) => <SelectItem key={u.id} value={String(u.id)}>{u.code} — {u.name}</SelectItem>)}
+                                                        {uoms.map((u) => (
+                                                            <SelectItem
+                                                                key={u.id}
+                                                                value={String(
+                                                                    u.id,
+                                                                )}
+                                                            >
+                                                                {u.code} —{' '}
+                                                                {u.name}
+                                                            </SelectItem>
+                                                        ))}
                                                     </SelectContent>
                                                 </Select>
                                             </div>
@@ -155,21 +238,75 @@ export default function Items({
 
                                         <div className="grid grid-cols-2 gap-3">
                                             <div className="grid min-w-0 gap-1.5">
-                                                <Label htmlFor="sale_price">Bikri Rate <span className="text-muted-foreground font-normal">(Sale price)</span></Label>
-                                                <Input id="sale_price" type="number" min="0" step="any" placeholder="0" value={form.data.sale_price} onChange={(e) => form.setData('sale_price', e.target.value)} />
+                                                <Label htmlFor="sale_price">
+                                                    Bikri Rate{' '}
+                                                    <span className="text-muted-foreground font-normal">
+                                                        (Sale price)
+                                                    </span>
+                                                </Label>
+                                                <Input
+                                                    id="sale_price"
+                                                    type="number"
+                                                    min="0"
+                                                    step="any"
+                                                    placeholder="0"
+                                                    value={form.data.sale_price}
+                                                    onChange={(e) =>
+                                                        form.setData(
+                                                            'sale_price',
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                />
                                             </div>
                                             <div className="grid min-w-0 gap-1.5">
-                                                <Label htmlFor="standard_cost">Khareed Rate <span className="text-muted-foreground font-normal">(Cost)</span></Label>
-                                                <Input id="standard_cost" type="number" min="0" step="any" placeholder="0" value={form.data.standard_cost} onChange={(e) => form.setData('standard_cost', e.target.value)} />
+                                                <Label htmlFor="standard_cost">
+                                                    Khareed Rate{' '}
+                                                    <span className="text-muted-foreground font-normal">
+                                                        (Cost)
+                                                    </span>
+                                                </Label>
+                                                <Input
+                                                    id="standard_cost"
+                                                    type="number"
+                                                    min="0"
+                                                    step="any"
+                                                    placeholder="0"
+                                                    value={
+                                                        form.data.standard_cost
+                                                    }
+                                                    onChange={(e) =>
+                                                        form.setData(
+                                                            'standard_cost',
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                />
                                             </div>
                                         </div>
 
                                         <p className="text-muted-foreground bg-muted/40 rounded-md px-3 py-2 text-xs">
-                                            ✓ Bikri Rate Quick Sale mein khud bhar jata hai. Accounting (inventory, income &amp; cost accounts) Type se automatic set hoti hai — <b>Advanced</b> sirf tab kholein jab posting badalni ho.
+                                            ✓ Bikri Rate Quick Sale mein khud
+                                            bhar jata hai. Accounting
+                                            (inventory, income &amp; cost
+                                            accounts) Type se automatic set hoti
+                                            hai — <b>Advanced</b> sirf tab
+                                            kholein jab posting badalni ho.
                                         </p>
 
-                                        <button type="button" onClick={() => setAdvanced((a) => !a)} className="text-muted-foreground hover:text-foreground flex w-fit items-center gap-1 text-xs font-medium">
-                                            {advanced ? <ChevronDown className="size-3.5" /> : <ChevronRight className="size-3.5" />} Advanced options
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                setAdvanced((a) => !a)
+                                            }
+                                            className="text-muted-foreground hover:text-foreground flex w-fit items-center gap-1 text-xs font-medium"
+                                        >
+                                            {advanced ? (
+                                                <ChevronDown className="size-3.5" />
+                                            ) : (
+                                                <ChevronRight className="size-3.5" />
+                                            )}{' '}
+                                            Advanced options
                                         </button>
 
                                         {advanced && (
@@ -177,21 +314,79 @@ export default function Items({
                                                 <div className="grid grid-cols-2 gap-3">
                                                     <div className="grid min-w-0 gap-1.5">
                                                         <Label>Valuation</Label>
-                                                        <Select value={form.data.valuation_method} onValueChange={(v) => form.setData('valuation_method', v === 'default' ? '' : v)}>
-                                                            <SelectTrigger className="w-full"><SelectValue placeholder="Company default" /></SelectTrigger>
+                                                        <Select
+                                                            value={
+                                                                form.data
+                                                                    .valuation_method
+                                                            }
+                                                            onValueChange={(
+                                                                v,
+                                                            ) =>
+                                                                form.setData(
+                                                                    'valuation_method',
+                                                                    v ===
+                                                                        'default'
+                                                                        ? ''
+                                                                        : v,
+                                                                )
+                                                            }
+                                                        >
+                                                            <SelectTrigger className="w-full">
+                                                                <SelectValue placeholder="Company default" />
+                                                            </SelectTrigger>
                                                             <SelectContent>
-                                                                <SelectItem value="default">Company default</SelectItem>
-                                                                <SelectItem value="weighted_average">Weighted Average</SelectItem>
-                                                                <SelectItem value="fifo">FIFO</SelectItem>
+                                                                <SelectItem value="default">
+                                                                    Company
+                                                                    default
+                                                                </SelectItem>
+                                                                <SelectItem value="weighted_average">
+                                                                    Weighted
+                                                                    Average
+                                                                </SelectItem>
+                                                                <SelectItem value="fifo">
+                                                                    FIFO
+                                                                </SelectItem>
                                                             </SelectContent>
                                                         </Select>
                                                     </div>
                                                     <div className="grid min-w-0 gap-1.5">
-                                                        <Label>Inventory account</Label>
-                                                        <Select value={form.data.inventory_account_id} onValueChange={(v) => form.setData('inventory_account_id', v)}>
-                                                            <SelectTrigger className="w-full"><SelectValue placeholder="—" /></SelectTrigger>
+                                                        <Label>
+                                                            Inventory account
+                                                        </Label>
+                                                        <Select
+                                                            value={
+                                                                form.data
+                                                                    .inventory_account_id
+                                                            }
+                                                            onValueChange={(
+                                                                v,
+                                                            ) =>
+                                                                form.setData(
+                                                                    'inventory_account_id',
+                                                                    v,
+                                                                )
+                                                            }
+                                                        >
+                                                            <SelectTrigger className="w-full">
+                                                                <SelectValue placeholder="—" />
+                                                            </SelectTrigger>
                                                             <SelectContent>
-                                                                {assetAccounts.map((a) => <SelectItem key={a.id} value={String(a.id)}>{a.label}</SelectItem>)}
+                                                                {assetAccounts.map(
+                                                                    (a) => (
+                                                                        <SelectItem
+                                                                            key={
+                                                                                a.id
+                                                                            }
+                                                                            value={String(
+                                                                                a.id,
+                                                                            )}
+                                                                        >
+                                                                            {
+                                                                                a.label
+                                                                            }
+                                                                        </SelectItem>
+                                                                    ),
+                                                                )}
                                                             </SelectContent>
                                                         </Select>
                                                     </div>
@@ -199,20 +394,90 @@ export default function Items({
                                                 {sellable && (
                                                     <div className="grid grid-cols-2 gap-3">
                                                         <div className="grid min-w-0 gap-1.5">
-                                                            <Label>Income account <span className="text-muted-foreground font-normal">(sales)</span></Label>
-                                                            <Select value={form.data.income_account_id} onValueChange={(v) => form.setData('income_account_id', v)}>
-                                                                <SelectTrigger className="w-full"><SelectValue placeholder="—" /></SelectTrigger>
+                                                            <Label>
+                                                                Income account{' '}
+                                                                <span className="text-muted-foreground font-normal">
+                                                                    (sales)
+                                                                </span>
+                                                            </Label>
+                                                            <Select
+                                                                value={
+                                                                    form.data
+                                                                        .income_account_id
+                                                                }
+                                                                onValueChange={(
+                                                                    v,
+                                                                ) =>
+                                                                    form.setData(
+                                                                        'income_account_id',
+                                                                        v,
+                                                                    )
+                                                                }
+                                                            >
+                                                                <SelectTrigger className="w-full">
+                                                                    <SelectValue placeholder="—" />
+                                                                </SelectTrigger>
                                                                 <SelectContent>
-                                                                    {incomeAccounts.map((a) => <SelectItem key={a.id} value={String(a.id)}>{a.label}</SelectItem>)}
+                                                                    {incomeAccounts.map(
+                                                                        (a) => (
+                                                                            <SelectItem
+                                                                                key={
+                                                                                    a.id
+                                                                                }
+                                                                                value={String(
+                                                                                    a.id,
+                                                                                )}
+                                                                            >
+                                                                                {
+                                                                                    a.label
+                                                                                }
+                                                                            </SelectItem>
+                                                                        ),
+                                                                    )}
                                                                 </SelectContent>
                                                             </Select>
                                                         </div>
                                                         <div className="grid min-w-0 gap-1.5">
-                                                            <Label>COGS account <span className="text-muted-foreground font-normal">(sales)</span></Label>
-                                                            <Select value={form.data.cogs_account_id} onValueChange={(v) => form.setData('cogs_account_id', v)}>
-                                                                <SelectTrigger className="w-full"><SelectValue placeholder="—" /></SelectTrigger>
+                                                            <Label>
+                                                                COGS account{' '}
+                                                                <span className="text-muted-foreground font-normal">
+                                                                    (sales)
+                                                                </span>
+                                                            </Label>
+                                                            <Select
+                                                                value={
+                                                                    form.data
+                                                                        .cogs_account_id
+                                                                }
+                                                                onValueChange={(
+                                                                    v,
+                                                                ) =>
+                                                                    form.setData(
+                                                                        'cogs_account_id',
+                                                                        v,
+                                                                    )
+                                                                }
+                                                            >
+                                                                <SelectTrigger className="w-full">
+                                                                    <SelectValue placeholder="—" />
+                                                                </SelectTrigger>
                                                                 <SelectContent>
-                                                                    {expenseAccounts.map((a) => <SelectItem key={a.id} value={String(a.id)}>{a.label}</SelectItem>)}
+                                                                    {expenseAccounts.map(
+                                                                        (a) => (
+                                                                            <SelectItem
+                                                                                key={
+                                                                                    a.id
+                                                                                }
+                                                                                value={String(
+                                                                                    a.id,
+                                                                                )}
+                                                                            >
+                                                                                {
+                                                                                    a.label
+                                                                                }
+                                                                            </SelectItem>
+                                                                        ),
+                                                                    )}
                                                                 </SelectContent>
                                                             </Select>
                                                         </div>
@@ -222,7 +487,12 @@ export default function Items({
                                         )}
                                     </div>
                                     <DialogFooter>
-                                        <Button type="submit" disabled={form.processing}>Create item</Button>
+                                        <Button
+                                            type="submit"
+                                            disabled={form.processing}
+                                        >
+                                            Create item
+                                        </Button>
                                     </DialogFooter>
                                 </form>
                             </DialogContent>
@@ -246,13 +516,27 @@ export default function Items({
                         <tbody className="divide-y">
                             {items.map((i) => (
                                 <tr key={i.id} className="hover:bg-muted/40">
-                                    <td className="px-4 py-2.5 font-mono text-xs">{i.code}</td>
+                                    <td className="px-4 py-2.5 font-mono text-xs">
+                                        {i.code}
+                                    </td>
                                     <td className="px-4 py-2.5">{i.name}</td>
-                                    <td className="text-muted-foreground px-4 py-2.5 capitalize">{i.type.replace('_', ' ')}</td>
-                                    <td className="px-4 py-2.5">{i.uom ?? '—'}</td>
-                                    <td className="px-4 py-2.5 text-right font-mono tabular-nums">{i.sale_price ? money(i.sale_price) : '—'}</td>
-                                    <td className="px-4 py-2.5 text-right font-mono tabular-nums">{i.qty ? money(i.qty) : '—'}</td>
-                                    <td className="px-4 py-2.5 text-right font-mono tabular-nums">{i.value ? money(i.value) : '—'}</td>
+                                    <td className="text-muted-foreground px-4 py-2.5 capitalize">
+                                        {i.type.replace('_', ' ')}
+                                    </td>
+                                    <td className="px-4 py-2.5">
+                                        {i.uom ?? '—'}
+                                    </td>
+                                    <td className="px-4 py-2.5 text-right font-mono tabular-nums">
+                                        {i.sale_price
+                                            ? money(i.sale_price)
+                                            : '—'}
+                                    </td>
+                                    <td className="px-4 py-2.5 text-right font-mono tabular-nums">
+                                        {i.qty ? money(i.qty) : '—'}
+                                    </td>
+                                    <td className="px-4 py-2.5 text-right font-mono tabular-nums">
+                                        {i.value ? money(i.value) : '—'}
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>

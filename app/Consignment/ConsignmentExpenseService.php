@@ -209,7 +209,7 @@ class ConsignmentExpenseService
     /**
      * Allocate the capitalised total across the dispatch's on-hand items.
      *
-     * @return array{shares: array<int, float>, items: array<int, \App\Models\Item>}
+     * @return array{shares: array<int, float>, items: array<int, Item>}
      */
     private function allocate(ConsignmentExpense $expense, float $ecap): array
     {
