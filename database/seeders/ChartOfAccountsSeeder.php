@@ -115,7 +115,12 @@ class ChartOfAccountsSeeder extends Seeder
             );
         }
 
-        $this->seedOpeningBalance($company, $ids);
+        // A sample opening capital injection is demo convenience only (so reports
+        // aren't empty on a dev/staging install). A real production company starts
+        // from zero and enters its own opening balances, so skip it there.
+        if ((bool) env('SEED_DEMO', ! app()->environment('production'))) {
+            $this->seedOpeningBalance($company, $ids);
+        }
     }
 
     /**
