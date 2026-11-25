@@ -456,6 +456,7 @@ export default function Dashboard({
                     <div
                         className="dash-anim"
                         style={{ animation: 'dashRise .5s ease-out .08s both' }}
+                        data-tour="quick-actions"
                     >
                         <h2 className="text-muted-foreground mb-3 flex items-center gap-2 text-sm font-semibold tracking-wide uppercase">
                             <Zap className="size-4 text-amber-500" /> Jaldi Kaam

@@ -8,12 +8,24 @@ import { useAppMode, type AppMode } from '@/hooks/use-app-mode';
 export function ModeToggle() {
     const { mode, setMode } = useAppMode();
 
+    const choose = (value: AppMode) => {
+        // Guard: Full mode shows the heavy accountant screens. Confirm once so a
+        // non-technical user doesn't land there by accident and get lost.
+        if (value === 'full' && mode !== 'full') {
+            const ok = window.confirm(
+                'Poora mode munshi/accountant ke liye hai — isme bohat saari extra screens aa jati hain.\n\nKya aap waqai Poora mode kholna chahte hain?',
+            );
+            if (!ok) return;
+        }
+        setMode(value);
+    };
+
     const btn = (value: AppMode, label: string, Icon: typeof Eye) => {
         const active = mode === value;
         return (
             <button
                 type="button"
-                onClick={() => setMode(value)}
+                onClick={() => choose(value)}
                 aria-pressed={active}
                 className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-medium transition-colors ${
                     active
