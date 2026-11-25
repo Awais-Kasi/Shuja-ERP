@@ -1,5 +1,5 @@
 import { usePage } from '@inertiajs/react';
-import { Compass, LifeBuoy, PlayCircle } from 'lucide-react';
+import { Compass, LifeBuoy, PlayCircle, Printer } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import {
     Dialog,
@@ -91,6 +91,14 @@ export function HelpCenter() {
                             <Compass className="size-4" /> Shuruaati madad
                         </button>
                     </div>
+
+                    <button
+                        type="button"
+                        onClick={() => window.open('/guide', '_blank')}
+                        className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2.5 text-sm font-semibold text-indigo-700 transition-colors hover:bg-indigo-100 dark:border-indigo-900/50 dark:bg-indigo-950/40 dark:text-indigo-300"
+                    >
+                        <Printer className="size-4" /> Poora Guide (chaapein)
+                    </button>
 
                     <p className="text-muted-foreground mt-4 text-center text-xs">
                         Phir bhi masla ho to apne software wale se raabta karein.

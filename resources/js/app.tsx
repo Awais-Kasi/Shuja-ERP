@@ -17,6 +17,7 @@ void createInertiaApp({
             case name === 'hr/payroll/payslip':
             case name === 'sales/invoices/print':
             case name === 'purchase/orders/print':
+            case name === 'guide':
                 return null; // standalone print documents — no app chrome
             case name.startsWith('auth/'):
                 return AuthLayout;

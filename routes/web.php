@@ -51,6 +51,7 @@ use App\Http\Controllers\SearchController;
 use App\Http\Controllers\UdhaarController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 // The app opens on the login page (or the dashboard when already signed in).
 Route::get('/', fn () => redirect()->route(Auth::check() ? 'dashboard' : 'login'))->name('home');
@@ -74,6 +75,9 @@ Route::get('version', function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Printable plain-Urdu quick-start handout (standalone print page).
+    Route::get('guide', fn () => Inertia::render('guide'))->name('guide');
 
     // Everyday "easy" screens
     Route::get('udhaar', [UdhaarController::class, 'index'])->middleware('can:sales.order.manage')->name('udhaar');
